@@ -118,3 +118,4 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 - Connection testing allows researchers to verify connectivity before running interpretations.
 - Zero silent fallback to other paid models.
 - Researchers supply their own API keys and are responsible for provider billing.
+

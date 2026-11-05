@@ -45,3 +45,4 @@ def get_evidence(evidence_id: str):
     if not ev:
         raise HTTPException(status_code=404, detail=f"Evidence reference '{evidence_id}' not found.")
     return ev
+

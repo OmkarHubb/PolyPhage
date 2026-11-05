@@ -190,3 +190,4 @@ export interface AIChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
 }
+

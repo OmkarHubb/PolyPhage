@@ -72,3 +72,4 @@ class ScientificAssessmentResult(BaseModel):
     assumptions_and_limitations: List[str]
     missing_evidence_and_uncertainties: List[str]
     experimental_reference_data_points: List[Dict[str, Any]]
+

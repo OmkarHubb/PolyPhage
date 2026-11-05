@@ -7,7 +7,6 @@ import {
   RefreshCw,
   Trash2,
   ExternalLink,
-  Server,
   Zap,
   Lock,
 } from 'lucide-react';
@@ -39,7 +38,7 @@ const PROVIDERS: ProviderPreset[] = [
   },
   {
     id: 'groq',
-    name: 'Groq Cloud (Fast Llama-3 / Gemma)',
+    name: 'Groq Cloud (Fast Inference)',
     baseUrl: 'https://api.groq.com/openai/v1',
     defaultModel: 'llama-3.3-70b-versatile',
     recommendedModels: ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'],
@@ -59,7 +58,7 @@ const PROVIDERS: ProviderPreset[] = [
   },
   {
     id: 'custom',
-    name: 'Custom OpenAI-Compatible Endpoint (Local Ollama / vLLM / LiteLLM)',
+    name: 'Custom OpenAI-Compatible Endpoint (Ollama / vLLM)',
     baseUrl: 'http://127.0.0.1:11434/v1',
     defaultModel: 'llama3',
     recommendedModels: ['llama3', 'mistral', 'deepseek-chat'],
@@ -106,7 +105,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     setSaveSuccess(null);
     setSaveError(null);
 
-    // If key not typed, check if backend already has configured key
     const keyToTest = apiKey.trim() || (aiSettings?.api_key_configured ? 'USE_EXISTING' : '');
 
     if (!keyToTest) {
@@ -150,8 +148,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         model: model.trim(),
       });
       await onRefreshSettings();
-      setSaveSuccess('Configuration updated successfully and saved securely on local server.');
-      setApiKey(''); // Clear raw secret from local form state
+      setSaveSuccess('Configuration updated successfully and stored securely on backend.');
+      setApiKey(''); // Clear raw secret from state
     } catch (e: any) {
       setSaveError(e.message || 'Failed to update AI settings.');
     } finally {
@@ -160,7 +158,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   };
 
   const handleDisconnect = async () => {
-    if (!window.confirm('Disconnect AI provider and clear stored API credentials from the backend?')) {
+    if (!window.confirm('Disconnect AI provider and clear stored credentials on the backend?')) {
       return;
     }
     try {
@@ -175,62 +173,60 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-4xl mx-auto">
+    <div className="p-8 max-w-4xl mx-auto space-y-6">
       {/* Title */}
       <div>
-        <h1 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-          <KeyRound className="w-5 h-5 text-purple-400" />
-          <span>AI Provider Configuration (BYOK Architecture)</span>
+        <h1 className="text-xl font-bold text-[#24242B] flex items-center gap-2">
+          <KeyRound className="w-5 h-5 text-[#9785E8]" />
+          <span>AI Provider Configuration (BYOK)</span>
         </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Bring Your Own Key: PolyPhage AI connects to OpenAI-compatible LLMs to interpret structured scientific assessments.
+        <p className="text-xs text-[#777780] mt-1">
+          Bring Your Own Key: Connect PolyPhage AI to OpenAI-compatible endpoints to interpret structured assessments.
         </p>
       </div>
 
       {/* Security & Responsibility Disclosure */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 space-y-3">
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-200">
-          <ShieldCheck className="w-4 h-4 text-emerald-400" />
+      <div className="bg-white rounded-2xl p-6 border border-[#E7E7EB] shadow-xs space-y-3">
+        <div className="flex items-center gap-2 text-xs font-bold text-[#24242B]">
+          <ShieldCheck className="w-4 h-4 text-[#72C7B0]" />
           <span>Security Architecture & Researcher Usage Terms</span>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300 leading-relaxed">
-          <div className="space-y-1.5 bg-slate-950 p-3 rounded border border-slate-800/80">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-semibold block">
-              Credentials Isolation
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div className="space-y-1 bg-[#FAF9FD] p-3.5 rounded-xl border border-[#EAE5FA]">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#7461CE] block">
+              Backend Credential Isolation
             </span>
-            <p className="text-[11px] text-slate-400">
-              Your API key is never written to browser LocalStorage, client JavaScript bundles, or application logs.
-              It is stored strictly on the backend host in a local configuration file with restricted file permissions.
+            <p className="text-[#777780] leading-relaxed">
+              Your API key is never written to browser LocalStorage or frontend bundles. It is managed strictly on the backend server in an isolated configuration file.
             </p>
           </div>
 
-          <div className="space-y-1.5 bg-slate-950 p-3 rounded border border-slate-800/80">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-amber-400 font-semibold block">
-              Independent Scientific Laboratory
+          <div className="space-y-1 bg-[#FAF9FD] p-3.5 rounded-xl border border-[#EAE5FA]">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#B47820] block">
+              Autonomous Laboratory Guarantee
             </span>
-            <p className="text-[11px] text-slate-400">
-              AI is completely optional. If unconfigured or disconnected, the deterministic biochemical assessment engine
-              and all experimental tools remain 100% operational. You are responsible for your own provider usage charges.
+            <p className="text-[#777780] leading-relaxed">
+              AI is completely optional. If unconfigured or disconnected, the deterministic biochemical assessment engine and all experimental tools remain 100% operational.
             </p>
           </div>
         </div>
       </div>
 
       {/* Active Status Banner */}
-      <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+      <div className="bg-white rounded-2xl p-5 border border-[#E7E7EB] shadow-xs flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div
             className={`w-3 h-3 rounded-full ${
-              aiSettings?.is_active ? 'bg-emerald-400 animate-pulse' : 'bg-slate-600'
+              aiSettings?.is_active ? 'bg-[#72C7B0]' : 'bg-[#D0D0D6]'
             }`}
           />
           <div>
-            <div className="text-xs font-semibold text-slate-200">
+            <div className="text-xs font-bold text-[#24242B]">
               {aiSettings?.is_active
                 ? `Connected to ${aiSettings.provider.toUpperCase()} (${aiSettings.model})`
                 : 'No Active AI Connection (Idle / BYOK)'}
             </div>
-            <div className="text-[11px] text-slate-400 font-mono">
+            <div className="text-[11px] text-[#777780] font-mono">
               {aiSettings?.status_message || (aiSettings?.is_active ? 'Ready for scientific interpretation' : 'Awaiting API key')}
               {aiSettings?.masked_key && ` · Key: ${aiSettings.masked_key}`}
             </div>
@@ -240,48 +236,48 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         {aiSettings?.is_active && (
           <button
             onClick={handleDisconnect}
-            className="px-3 py-1.5 bg-red-950/40 hover:bg-red-900/40 text-red-300 border border-red-800/60 rounded text-xs font-medium flex items-center gap-1.5 transition cursor-pointer"
+            className="px-3 py-1.5 bg-[#FCEEEE] hover:bg-[#F8E1E1] text-[#C44141] border border-[#F8C8C8] rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span>Disconnect & Wipe Key</span>
+            <span>Disconnect</span>
           </button>
         )}
       </div>
 
       {/* Configuration Form */}
-      <form onSubmit={handleSaveSettings} className="bg-slate-900/90 border border-slate-800 rounded-xl p-6 space-y-5">
-        <h2 className="text-sm font-semibold text-slate-200 border-b border-slate-800 pb-3">
+      <form onSubmit={handleSaveSettings} className="bg-white rounded-2xl p-6 border border-[#E7E7EB] shadow-xs space-y-5">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-[#24242B] border-b border-[#E7E7EB] pb-3">
           Provider & Model Parameters
         </h2>
 
         {/* Provider selector */}
         <div className="space-y-2">
-          <label className="text-xs font-medium text-slate-300 block">Select AI Provider Adapter:</label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <label className="text-xs font-semibold text-[#24242B] block">Select AI Provider Adapter:</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {PROVIDERS.map(p => (
               <div
                 key={p.id}
                 onClick={() => handleProviderSelect(p.id)}
-                className={`p-3 rounded-lg border cursor-pointer transition text-xs ${
+                className={`p-3.5 rounded-xl border cursor-pointer transition-all text-xs ${
                   provider === p.id
-                    ? 'bg-slate-800 border-purple-500 shadow-sm'
-                    : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                    ? 'bg-[#FAF9FD] border-[#9785E8] shadow-xs ring-1 ring-[#9785E8]/30'
+                    : 'bg-[#FAFAFC] border-[#E7E7EB] hover:border-[#D0D0D8] hover:bg-white'
                 }`}
               >
-                <div className="flex items-center justify-between font-semibold text-slate-200">
+                <div className="flex items-center justify-between font-bold text-[#24242B]">
                   <span>{p.name}</span>
                   <a
                     href={p.docUrl}
                     target="_blank"
                     rel="noreferrer"
                     onClick={e => e.stopPropagation()}
-                    className="text-[10px] text-slate-500 hover:text-purple-400 flex items-center gap-0.5"
+                    className="text-[10px] text-[#777780] hover:text-[#9785E8] flex items-center gap-0.5"
                   >
                     <span>Keys</span>
                     <ExternalLink className="w-2.5 h-2.5" />
                   </a>
                 </div>
-                <div className="text-[11px] font-mono text-slate-400 mt-1 truncate">{p.baseUrl}</div>
+                <div className="text-[11px] font-mono text-[#777780] mt-1 truncate">{p.baseUrl}</div>
               </div>
             ))}
           </div>
@@ -290,13 +286,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         {/* API Key */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-medium text-slate-300">
+            <label className="text-xs font-semibold text-[#24242B]">
               API Key ({provider.toUpperCase()}):
             </label>
             {aiSettings?.api_key_configured && (
-              <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
+              <span className="text-[10px] font-mono text-[#2D8A6E] flex items-center gap-1 font-semibold">
                 <CheckCircle2 className="w-3 h-3" />
-                <span>Saved on server ({aiSettings.masked_key})</span>
+                <span>Configured on server ({aiSettings.masked_key})</span>
               </span>
             )}
           </div>
@@ -309,36 +305,36 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 ? 'Enter new key to replace existing saved credentials...'
                 : 'sk-...'
             }
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-purple-500"
+            className="w-full bg-[#F7F7F8] border border-[#E7E7EB] rounded-xl px-4 py-2.5 text-xs font-mono text-[#24242B] placeholder-[#A0A0A8] focus:outline-none focus:border-[#9785E8] focus:bg-white transition-colors"
           />
-          <p className="text-[10px] text-slate-500">
-            Never shared with 3rd parties. Kept strictly on the backend.
+          <p className="text-[10px] text-[#777780]">
+            Never shared with third parties. Handled strictly via backend local store.
           </p>
         </div>
 
         {/* Base URL */}
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-slate-300">API Base URL Endpoint:</label>
+          <label className="text-xs font-semibold text-[#24242B]">API Base URL Endpoint:</label>
           <input
             type="text"
             value={baseUrl}
             onChange={e => setBaseUrl(e.target.value)}
             placeholder="https://api.openai.com/v1"
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-purple-500"
+            className="w-full bg-[#F7F7F8] border border-[#E7E7EB] rounded-xl px-4 py-2.5 text-xs font-mono text-[#24242B] placeholder-[#A0A0A8] focus:outline-none focus:border-[#9785E8] focus:bg-white transition-colors"
           />
         </div>
 
         {/* Model Identifier */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-medium text-slate-300">Model Name / ID:</label>
+            <label className="text-xs font-semibold text-[#24242B]">Model Name / ID:</label>
             <div className="flex items-center gap-1">
               {preset.recommendedModels.map(rm => (
                 <button
                   type="button"
                   key={rm}
                   onClick={() => setModel(rm)}
-                  className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-950 hover:bg-slate-800 text-slate-400 border border-slate-800 cursor-pointer"
+                  className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#F7F7F8] hover:bg-[#EAE5FA] text-[#777780] hover:text-[#7461CE] border border-[#E7E7EB] cursor-pointer"
                 >
                   {rm}
                 </button>
@@ -350,18 +346,18 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             value={model}
             onChange={e => setModel(e.target.value)}
             placeholder="gpt-4o-mini"
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-purple-500"
+            className="w-full bg-[#F7F7F8] border border-[#E7E7EB] rounded-xl px-4 py-2.5 text-xs font-mono text-[#24242B] placeholder-[#A0A0A8] focus:outline-none focus:border-[#9785E8] focus:bg-white transition-colors"
           />
         </div>
 
         {/* Actions & Feedback */}
-        <div className="pt-3 border-t border-slate-800 space-y-3">
+        <div className="pt-3 border-t border-[#E7E7EB] space-y-3">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={handleTestConnection}
               disabled={isTesting || (!apiKey.trim() && !aiSettings?.api_key_configured)}
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 flex items-center gap-1.5 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="px-4 py-2 bg-white hover:bg-[#F7F7F8] text-[#24242B] rounded-xl text-xs font-semibold border border-[#E7E7EB] flex items-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-xs"
             >
               {isTesting ? (
                 <>
@@ -370,7 +366,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 </>
               ) : (
                 <>
-                  <Zap className="w-3.5 h-3.5 text-cyan-400" />
+                  <Zap className="w-3.5 h-3.5 text-[#9785E8]" />
                   <span>Test Connection</span>
                 </>
               )}
@@ -379,14 +375,14 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             <button
               type="submit"
               disabled={isSaving}
-              className="px-5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
+              className="px-5 py-2 bg-[#9785E8] hover:bg-[#8673DC] text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer shadow-xs"
             >
               {isSaving ? (
                 <span>Saving...</span>
               ) : (
                 <>
                   <Lock className="w-3.5 h-3.5" />
-                  <span>Save Configuration to Server</span>
+                  <span>Save Configuration</span>
                 </>
               )}
             </button>
@@ -395,21 +391,21 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
           {/* Test connection report */}
           {testResult && (
             <div
-              className={`p-3 rounded-lg border text-xs flex items-center gap-2 ${
+              className={`p-3.5 rounded-xl border text-xs flex items-center gap-2.5 ${
                 testResult.success
-                  ? 'bg-emerald-950/40 border-emerald-800/80 text-emerald-200'
-                  : 'bg-red-950/40 border-red-800/80 text-red-200'
+                  ? 'bg-[#E8F6F1] border-[#C6E8DC] text-[#2D8A6E]'
+                  : 'bg-[#FCEEEE] border-[#F8C8C8] text-[#C44141]'
               }`}
             >
               {testResult.success ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-[#2D8A6E]" />
               ) : (
-                <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+                <AlertTriangle className="w-4 h-4 shrink-0 text-[#C44141]" />
               )}
               <div className="space-y-0.5">
-                <div>{testResult.message}</div>
+                <div className="font-medium">{testResult.message}</div>
                 {testResult.latency_ms && (
-                  <div className="text-[10px] font-mono text-emerald-400/80">
+                  <div className="text-[10px] font-mono opacity-80">
                     Round-trip latency: {testResult.latency_ms} ms · Validated endpoint
                   </div>
                 )}
@@ -418,15 +414,15 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
           )}
 
           {saveSuccess && (
-            <div className="p-2.5 bg-emerald-950/40 border border-emerald-800/80 rounded text-xs text-emerald-200 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <div className="p-3 bg-[#E8F6F1] border border-[#C6E8DC] rounded-xl text-xs text-[#2D8A6E] flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
               <span>{saveSuccess}</span>
             </div>
           )}
 
           {saveError && (
-            <div className="p-2.5 bg-red-950/40 border border-red-800/80 rounded text-xs text-red-200 flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+            <div className="p-3 bg-[#FCEEEE] border border-[#F8C8C8] rounded-xl text-xs text-[#C44141] flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
               <span>{saveError}</span>
             </div>
           )}

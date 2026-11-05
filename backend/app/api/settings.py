@@ -37,3 +37,4 @@ async def test_ai_connection(payload: TestConnectionRequest):
 def clear_ai_settings():
     credential_manager.clear()
     return credential_manager.get_public_settings()
+

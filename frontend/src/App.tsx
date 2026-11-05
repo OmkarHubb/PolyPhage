@@ -153,37 +153,35 @@ export const App: React.FC = () => {
 
   if (isLoadingInitial) {
     return (
-      <div className="min-h-screen bg-[#0a0d14] flex flex-col items-center justify-center space-y-3 text-slate-400">
-        <RefreshCw className="w-8 h-8 animate-spin text-emerald-400" />
-        <div className="text-sm font-semibold text-slate-200">Initializing PolyPhage Virtual Laboratory...</div>
-        <div className="text-xs font-mono text-slate-500">Loading verified biochemical catalogs & evidence references</div>
+      <div className="min-h-screen bg-[#F2F2F4] flex flex-col items-center justify-center space-y-3 text-[#777780]">
+        <RefreshCw className="w-8 h-8 animate-spin text-[#9785E8]" />
+        <div className="text-sm font-bold text-[#24242B]">Initializing PolyPhage Biotechnology Station...</div>
+        <div className="text-xs font-mono text-[#A0A0A8]">Loading verified biochemical catalogs & evidence references</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0a0d14] text-slate-100 font-sans">
-      {/* Workstation Header */}
+    <div className="min-h-screen flex flex-col bg-[#F2F2F4] text-[#24242B] font-sans">
+      {/* Workstation Top Bar */}
       <Header
         experimentName={currentConfig.name}
         isAssessing={isAssessing}
         onRunAssessment={handleRunAssessment}
         aiSettings={aiSettings}
         onNavigateToSettings={() => setActiveSection('settings')}
-        activeSection={activeSection}
-        onNavigate={s => setActiveSection(s as SectionType)}
       />
 
       {/* Backend Disconnected Alert if any */}
       {systemError && (
-        <div className="bg-red-950/80 border-b border-red-800 text-red-200 px-5 py-2 text-xs flex items-center justify-between">
+        <div className="bg-[#FCEEEE] border-b border-[#F8C8C8] text-[#C44141] px-6 py-2.5 text-xs flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+            <AlertCircle className="w-4 h-4 text-[#C44141] shrink-0" />
             <span>{systemError}</span>
           </div>
           <button
             onClick={() => window.location.reload()}
-            className="underline font-mono text-red-300 hover:text-white ml-2 cursor-pointer"
+            className="underline font-semibold text-[#C44141] hover:text-[#9B2A2A] ml-2 cursor-pointer"
           >
             Retry Connection
           </button>
@@ -202,7 +200,7 @@ export const App: React.FC = () => {
         />
 
         {/* Content Pane */}
-        <main className="flex-1 overflow-y-auto bg-[#0b0f19]">
+        <main className="flex-1 overflow-y-auto bg-[#F2F2F4]">
           {activeSection === 'dashboard' && (
             <DashboardPage
               currentConfig={currentConfig}
@@ -246,6 +244,10 @@ export const App: React.FC = () => {
             />
           )}
 
+          {activeSection === 'evidence' && (
+            <EvidenceLibraryPage evidenceList={evidenceList} />
+          )}
+
           {activeSection === 'ai-assistant' && (
             <AIAssistantPage
               currentConfig={currentConfig}
@@ -254,10 +256,6 @@ export const App: React.FC = () => {
               onNavigateToSettings={() => setActiveSection('settings')}
               onNavigateToResults={() => setActiveSection('results')}
             />
-          )}
-
-          {activeSection === 'evidence' && (
-            <EvidenceLibraryPage evidenceList={evidenceList} />
           )}
 
           {activeSection === 'settings' && (

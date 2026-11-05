@@ -34,3 +34,4 @@ async def chat_assistant(payload: AIChatRequest):
         raise HTTPException(status_code=502, detail=str(re))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+

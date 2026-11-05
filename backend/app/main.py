@@ -45,3 +45,4 @@ app.include_router(ai_router, prefix=settings.API_PREFIX)
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host=settings.HOST, port=settings.PORT, reload=True)
+

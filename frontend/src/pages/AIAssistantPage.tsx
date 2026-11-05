@@ -5,12 +5,8 @@ import {
   Send,
   KeyRound,
   AlertCircle,
-  CheckCircle2,
-  HelpCircle,
-  Layers,
-  ArrowRight,
   RefreshCw,
-  FlaskConical,
+  ArrowRight,
 } from 'lucide-react';
 import {
   ExperimentConfig,
@@ -34,7 +30,6 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
   assessment,
   aiSettings,
   onNavigateToSettings,
-  onNavigateToResults,
 }) => {
   const [isInterpreting, setIsInterpreting] = useState(false);
   const [interpretation, setInterpretation] = useState<AIInterpretationResponse | null>(null);
@@ -45,7 +40,7 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
     {
       role: 'assistant',
       content:
-        'Hello researcher. I am your scientific co-pilot for PolyPhage AI. I can explain the catalytic mechanisms of PETase, analyze thermodynamic viability windows, interpret experimental degradation products, or recommend follow-up parameter sweeps grounded strictly in published literature.',
+        'Welcome. I am your scientific research copilot for PolyPhage AI. I interpret reaction viability, analyze active-site catalytic triad dynamics (Ser160-His237-Asp206), explain intermediate feedback inhibition, and recommend follow-up experimental sweeps strictly grounded in verified literature.',
     },
   ]);
   const [userInput, setUserInput] = useState('');
@@ -108,84 +103,82 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
 
   const quickQuestions = [
     'Explain the catalytic triad mechanism of IsPETase.',
-    'Why is mono-(2-hydroxyethyl) terephthalate (MHET) an inhibitor?',
-    'How does operating at 72°C near the PET glass transition temperature enhance LCC kinetics?',
+    'Why does MHET accumulate and inhibit the primary enzyme?',
+    'How does operating at 72°C near the PET Tg enhance LCC turnover?',
     'What buffer and pH control should I add to prevent acidification?',
   ];
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="p-8 max-w-[1500px] mx-auto space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-            <Bot className="w-5 h-5 text-purple-400" />
+          <h1 className="text-xl font-bold text-[#24242B] flex items-center gap-2">
+            <Bot className="w-5 h-5 text-[#9785E8]" />
             <span>AI Scientific Assistant</span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-[#777780] mt-1">
             Grounded interpretation of experiment findings, reaction mechanisms, and follow-up design.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onNavigateToSettings}
-            className={`px-3 py-1.5 rounded text-xs border font-medium flex items-center gap-1.5 transition cursor-pointer ${
-              isConfigured
-                ? 'bg-purple-950/40 text-purple-300 border-purple-800 hover:bg-purple-900/40'
-                : 'bg-amber-950/40 text-amber-300 border-amber-800 hover:bg-amber-900/40'
-            }`}
-          >
-            <KeyRound className="w-3.5 h-3.5" />
-            <span>{isConfigured ? `BYOK: ${aiSettings?.provider} (${aiSettings?.model})` : 'Configure AI Provider (BYOK)'}</span>
-          </button>
-        </div>
+        <button
+          onClick={onNavigateToSettings}
+          className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto ${
+            isConfigured
+              ? 'bg-[#EAE5FA] text-[#7461CE] border-[#D5CBF7] hover:bg-[#E2DBF8]'
+              : 'bg-[#FEF6EB] text-[#B47820] border-[#F6E1C4] hover:bg-[#FDF0DE]'
+          }`}
+        >
+          <KeyRound className="w-3.5 h-3.5" />
+          <span>{isConfigured ? `BYOK: ${aiSettings?.provider} (${aiSettings?.model})` : 'Configure AI Provider (BYOK)'}</span>
+        </button>
       </div>
 
-      {/* BYOK Warning if not configured */}
+      {/* BYOK Idle Banner if unconfigured */}
       {!isConfigured && (
-        <div className="bg-slate-900/90 border border-amber-800/60 rounded-xl p-5 flex flex-col sm:flex-row items-start justify-between gap-4">
+        <div className="bg-white rounded-2xl p-6 border border-[#F6E1C4] shadow-xs flex flex-col sm:flex-row items-start justify-between gap-4">
           <div className="space-y-1 text-xs">
-            <div className="flex items-center gap-2 text-amber-300 font-semibold">
-              <AlertCircle className="w-4 h-4 text-amber-400" />
+            <div className="flex items-center gap-2 text-[#B47820] font-bold">
+              <AlertCircle className="w-4 h-4 shrink-0" />
               <span>Bring Your Own Key (BYOK) — AI Assistant is Idle</span>
             </div>
-            <p className="text-slate-300 leading-relaxed max-w-2xl">
+            <p className="text-[#24242B] leading-relaxed max-w-2xl">
               The core virtual laboratory and deterministic scientific assessment work 100% independently without an API key.
-              To enable AI-assisted interpretation and mechanistic Q&A, supply your OpenAI-compatible API credentials (OpenAI, Groq, OpenRouter, etc.).
+              To enable AI-assisted interpretation and mechanistic Q&A, supply your OpenAI-compatible API credentials in Settings.
             </p>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-[#777780]">
               Credentials remain strictly on the backend server and are never exposed to browser LocalStorage or frontend bundles.
             </p>
           </div>
           <button
             onClick={onNavigateToSettings}
-            className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-slate-950 text-xs font-bold rounded shadow transition cursor-pointer shrink-0"
+            className="px-4 py-2 bg-[#9785E8] hover:bg-[#8673DC] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors cursor-pointer shrink-0"
           >
-            Open AI Settings →
+            Open Settings →
           </button>
         </div>
       )}
 
-      {/* Structured Interpretation Card */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-6 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+      {/* Structured Scientific Interpretation Section */}
+      <div className="bg-white rounded-2xl p-6 border border-[#E7E7EB] shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E7E7EB] pb-4">
           <div>
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-400" />
-              <h2 className="text-sm font-semibold text-slate-200">
-                Structured Scientific Interpretation of Current Assessment
+              <Sparkles className="w-4 h-4 text-[#9785E8]" />
+              <h2 className="text-sm font-bold text-[#24242B]">
+                Structured Scientific Interpretation
               </h2>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Analyzes the deterministic findings from {currentConfig.name} ({currentConfig.environment.temperature_celsius}°C, pH {currentConfig.environment.ph}).
+            <p className="text-xs text-[#777780] mt-0.5">
+              Interprets deterministic findings for {currentConfig.name} ({currentConfig.environment.temperature_celsius}°C, pH {currentConfig.environment.ph}).
             </p>
           </div>
 
           <button
             onClick={handleInterpret}
             disabled={isInterpreting || !isConfigured || !assessment}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold rounded-lg flex items-center gap-2 shadow transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0"
+            className="px-4 py-2 bg-[#9785E8] hover:bg-[#8673DC] text-white text-xs font-semibold rounded-xl flex items-center gap-2 shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0"
           >
             {isInterpreting ? (
               <>
@@ -202,16 +195,16 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
         </div>
 
         {interpretationError && (
-          <div className="p-3 bg-red-950/40 border border-red-800/80 rounded text-xs text-red-200 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+          <div className="p-3 bg-[#FCEEEE] border border-[#F8C8C8] rounded-xl text-xs text-[#C44141] flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{interpretationError}</span>
           </div>
         )}
 
         {!interpretation && !isInterpreting && (
-          <div className="p-6 text-center border border-dashed border-slate-800 rounded bg-slate-950/40 text-xs text-slate-500 space-y-1">
-            <p>No AI interpretation generated for this experiment run yet.</p>
-            <p className="text-[11px] text-slate-600">
+          <div className="p-8 text-center border border-dashed border-[#E7E7EB] rounded-xl bg-[#FAF9FD] text-xs text-[#777780] space-y-1">
+            <p className="font-semibold text-[#24242B]">No AI interpretation generated for this experiment run yet.</p>
+            <p className="text-[11px]">
               Click "Generate Scientific Interpretation" above to invoke the AI assistant on the current findings.
             </p>
           </div>
@@ -220,55 +213,55 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
         {interpretation && (
           <div className="space-y-4 text-xs">
             {/* Executive Overview */}
-            <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-1.5">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-purple-400 font-semibold block">
+            <div className="bg-[#FAF9FD] p-4 rounded-xl border border-[#EAE5FA] space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#7461CE] block">
                 Executive Biochemical Overview
               </span>
-              <p className="text-slate-200 leading-relaxed font-sans text-xs">
+              <p className="text-[#24242B] leading-relaxed text-xs">
                 {interpretation.executive_overview}
               </p>
             </div>
 
-            {/* Mechanism & Climate Split */}
+            {/* Mechanism & Climate Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-1.5">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-semibold block">
+              <div className="bg-[#FAF9FD] p-4 rounded-xl border border-[#EAE5FA] space-y-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D8A6E] block">
                   Catalytic Mechanism & Intermediate Dynamics
                 </span>
-                <p className="text-slate-300 leading-relaxed text-xs">
+                <p className="text-[#777780] leading-relaxed text-xs">
                   {interpretation.biochemical_mechanism_analysis}
                 </p>
               </div>
 
-              <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-1.5">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-400 font-semibold block">
-                  Circular Economy & Climate Mitigation Perspective
+              <div className="bg-[#FAF9FD] p-4 rounded-xl border border-[#EAE5FA] space-y-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#7461CE] block">
+                  Circular Economy & Climate Perspective
                 </span>
-                <p className="text-slate-300 leading-relaxed text-xs">
+                <p className="text-[#777780] leading-relaxed text-xs">
                   {interpretation.environmental_and_climate_perspective}
                 </p>
               </div>
             </div>
 
-            {/* Uncertainties & Recommended sweeps */}
+            {/* Caveats & Recommended Experiments */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-1.5">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-amber-400 font-semibold block">
+              <div className="bg-[#FAF9FD] p-4 rounded-xl border border-[#EAE5FA] space-y-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#B47820] block">
                   Scientific Caveats & Kinetic Boundaries
                 </span>
-                <p className="text-slate-300 leading-relaxed text-xs">
+                <p className="text-[#777780] leading-relaxed text-xs">
                   {interpretation.uncertainties_and_gap_analysis}
                 </p>
               </div>
 
-              <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-2">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-blue-400 font-semibold block">
+              <div className="bg-[#FAF9FD] p-4 rounded-xl border border-[#EAE5FA] space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#7461CE] block">
                   Recommended Follow-Up Investigations
                 </span>
-                <ul className="space-y-1.5 text-xs text-slate-300">
+                <ul className="space-y-1.5 text-xs text-[#24242B]">
                   {interpretation.recommended_follow_up_experiments.map((rec, i) => (
                     <li key={i} className="flex items-start gap-1.5">
-                      <span className="text-emerald-400 font-bold shrink-0">→</span>
+                      <span className="text-[#72C7B0] font-bold shrink-0">→</span>
                       <span>{rec}</span>
                     </li>
                   ))}
@@ -276,45 +269,43 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
               </div>
             </div>
 
-            <div className="text-[10px] text-slate-500 font-mono text-right">
-              Generated via {interpretation.provider} ({interpretation.model}) · Grounded in verified reference dataset
+            <div className="text-[10px] text-[#A0A0A8] font-mono text-right">
+              Generated via {interpretation.provider} ({interpretation.model}) · Grounded in literature
             </div>
           </div>
         )}
       </div>
 
-      {/* Interactive Chat Dialogue */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-6 space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+      {/* Interactive Dialogue Section */}
+      <div className="bg-white rounded-2xl p-6 border border-[#E7E7EB] shadow-xs space-y-4">
+        <div className="flex items-center justify-between border-b border-[#E7E7EB] pb-3">
           <div className="flex items-center gap-2">
-            <Bot className="w-4 h-4 text-emerald-400" />
-            <h2 className="text-sm font-semibold text-slate-200">
+            <Bot className="w-4 h-4 text-[#72C7B0]" />
+            <h2 className="text-xs font-bold uppercase tracking-wider text-[#24242B]">
               Interactive Scientific Dialogue
             </h2>
           </div>
-          <span className="text-xs text-slate-500 font-mono">
+          <span className="text-xs text-[#777780]">
             Context: {currentConfig.selected_components.length} components · {currentConfig.environment.temperature_celsius}°C
           </span>
         </div>
 
-        {/* Quick Question Chips */}
+        {/* Quick Inquiry Chips */}
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[10px] font-mono text-slate-500 mr-1">Suggested inquiries:</span>
+          <span className="text-[11px] text-[#777780] mr-1 font-medium">Suggested queries:</span>
           {quickQuestions.map((q, idx) => (
             <button
               key={idx}
-              onClick={() => {
-                setUserInput(q);
-              }}
-              className="text-[11px] px-2.5 py-1 rounded-full bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 transition cursor-pointer"
+              onClick={() => setUserInput(q)}
+              className="text-[11px] px-3 py-1 rounded-full bg-[#F7F7F8] hover:bg-[#EAE5FA] text-[#24242B] border border-[#E7E7EB] transition-colors cursor-pointer"
             >
               {q}
             </button>
           ))}
         </div>
 
-        {/* Message Log */}
-        <div className="space-y-3 max-h-96 overflow-y-auto pr-1 bg-slate-950/60 p-4 rounded-lg border border-slate-800/80">
+        {/* Messages Log */}
+        <div className="space-y-3 max-h-96 overflow-y-auto pr-1 bg-[#FAF9FD] p-4 rounded-xl border border-[#EAE5FA]">
           {chatMessages.map((msg, i) => (
             <div
               key={i}
@@ -322,14 +313,14 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
                 msg.role === 'user' ? 'items-end' : 'items-start'
               }`}
             >
-              <div className="flex items-center gap-1.5 mb-1 text-[10px] font-mono text-slate-500">
-                <span>{msg.role === 'user' ? 'Researcher' : 'AI Assistant'}</span>
+              <div className="flex items-center gap-1.5 mb-1 text-[10px] font-semibold text-[#A0A0A8]">
+                <span>{msg.role === 'user' ? 'Researcher' : 'AI Copilot'}</span>
               </div>
               <div
-                className={`p-3 rounded-lg text-xs leading-relaxed max-w-2xl whitespace-pre-line ${
+                className={`p-3.5 rounded-xl text-xs leading-relaxed max-w-2xl whitespace-pre-line shadow-2xs ${
                   msg.role === 'user'
-                    ? 'bg-slate-800 text-slate-100 border border-slate-700'
-                    : 'bg-[#111726] text-slate-200 border border-slate-800'
+                    ? 'bg-[#EAE5FA] text-[#24242B] border border-[#D5CBF7]'
+                    : 'bg-white text-[#24242B] border border-[#E7E7EB]'
                 }`}
               >
                 {msg.content}
@@ -338,20 +329,20 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
           ))}
 
           {isSendingChat && (
-            <div className="flex items-center gap-2 text-xs text-slate-400 p-2">
-              <RefreshCw className="w-3.5 h-3.5 animate-spin text-purple-400" />
-              <span>Consulting scientific literature and formulation rules...</span>
+            <div className="flex items-center gap-2 text-xs text-[#777780] p-2">
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#9785E8]" />
+              <span>Analyzing scientific literature & biochemical rules...</span>
             </div>
           )}
         </div>
 
         {chatError && (
-          <div className="p-2.5 bg-red-950/40 border border-red-800/80 rounded text-xs text-red-200">
+          <div className="p-3 bg-[#FCEEEE] border border-[#F8C8C8] rounded-xl text-xs text-[#C44141]">
             {chatError}
           </div>
         )}
 
-        {/* Chat Input */}
+        {/* Input Form */}
         <form onSubmit={handleSendMessage} className="flex gap-2">
           <input
             type="text"
@@ -360,15 +351,15 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
             placeholder={
               isConfigured
                 ? 'Ask a scientific question about degradation mechanisms, mutations, or kinetics...'
-                : 'Configure AI settings above to enable interactive scientific dialogue...'
+                : 'Configure AI settings above to enable interactive dialogue...'
             }
             disabled={!isConfigured || isSendingChat}
-            className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 disabled:opacity-50"
+            className="flex-1 bg-white border border-[#E7E7EB] rounded-xl px-4 py-2.5 text-xs text-[#24242B] placeholder-[#A0A0A8] focus:outline-none focus:border-[#9785E8] disabled:opacity-50 shadow-xs"
           />
           <button
             type="submit"
             disabled={!isConfigured || !userInput.trim() || isSendingChat}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="px-4 py-2.5 bg-[#9785E8] hover:bg-[#8673DC] text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-xs"
           >
             <Send className="w-3.5 h-3.5" />
             <span>Send</span>

@@ -58,3 +58,4 @@ class AIChatResponse(BaseModel):
     reply: str
     provider: str
     model: str
+

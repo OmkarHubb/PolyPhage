@@ -276,3 +276,4 @@ class AIService:
             raise RuntimeError(f"AI Chat error: {str(e)}")
 
 ai_service = AIService()
+

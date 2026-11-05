@@ -4,11 +4,11 @@ import {
   Plus,
   Trash2,
   Info,
-  SlidersHorizontal,
   Check,
   FlaskConical,
+  Layers,
+  ArrowRight,
   Sparkles,
-  ExternalLink,
 } from 'lucide-react';
 import {
   ComponentItem,
@@ -104,48 +104,48 @@ export const LabBenchPage: React.FC<LabBenchPageProps> = ({
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Header and Action */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="p-8 max-w-[1500px] mx-auto space-y-6">
+      {/* Header and Stage Progression */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-            <FlaskConical className="w-5 h-5 text-emerald-400" />
-            <span>Virtual Lab Bench & Component Library</span>
+          <h1 className="text-xl font-bold text-[#24242B] flex items-center gap-2">
+            <FlaskConical className="w-5 h-5 text-[#9785E8]" />
+            <span>Virtual Lab Bench & Component Assembly</span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Assemble plastics, depolymerase enzymes, cellular hosts, and buffers for reaction modeling.
+          <p className="text-xs text-[#777780] mt-1">
+            Select polyester substrates, hydrolytic enzymes, microbial expression hosts, and buffer salts.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => onNavigate('chamber')}
-            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded border border-slate-700 font-medium transition cursor-pointer"
-          >
-            Next: Environment Chamber →
-          </button>
-        </div>
+        <button
+          onClick={() => onNavigate('chamber')}
+          className="px-4 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-[#F7F7F8] text-[#24242B] border border-[#E7E7EB] transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+        >
+          <span>Next: Environment Chamber</span>
+          <ArrowRight className="w-3.5 h-3.5 text-[#9785E8]" />
+        </button>
       </div>
 
-      {/* Selected Workspace Bench Section */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-lg p-4">
-        <div className="flex items-center justify-between mb-3">
+      {/* ACTIVE EXPERIMENT BENCH PANEL */}
+      <div className="bg-white rounded-2xl p-6 border border-[#E7E7EB] shadow-xs space-y-4">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <h2 className="text-sm font-semibold text-slate-200">
-              Active Experiment Workspace Bench ({currentConfig.selected_components.length} components)
+            <span className="w-2 h-2 rounded-full bg-[#72C7B0]"></span>
+            <h2 className="text-sm font-bold text-[#24242B]">
+              Active Reaction Bench ({currentConfig.selected_components.length} components)
             </h2>
           </div>
           {currentConfig.selected_components.length === 0 && (
-            <span className="text-xs text-amber-400 font-mono">
+            <span className="text-xs text-[#B47820] font-medium">
               Select at least 1 substrate (e.g. PET) and 1 catalyst (e.g. IsPETase)
             </span>
           )}
         </div>
 
         {currentConfig.selected_components.length === 0 ? (
-          <div className="p-6 text-center border border-dashed border-slate-800 rounded bg-slate-950/40 text-xs text-slate-500">
-            Your lab bench is empty. Browse the library below and click "+ Add to Bench" to introduce components into the reaction chamber.
+          <div className="p-8 text-center border border-dashed border-[#E7E7EB] rounded-xl bg-[#FAF9FD] text-xs text-[#777780] space-y-1">
+            <p className="font-medium text-[#24242B]">Your reaction bench is empty.</p>
+            <p className="text-[11px]">Browse the library below and click "+ Add to Bench" to introduce components.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -155,36 +155,38 @@ export const LabBenchPage: React.FC<LabBenchPageProps> = ({
               return (
                 <div
                   key={sc.component_id}
-                  className="bg-slate-950/80 border border-slate-800 rounded p-3 space-y-2 hover:border-slate-700 transition"
+                  className="bg-[#FAFAFC] border border-[#E7E7EB] rounded-xl p-3.5 space-y-2.5 hover:border-[#D0D0D8] transition-colors"
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">
+                      <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-white text-[#777780] border border-[#E7E7EB]">
                         {comp.category}
                       </span>
-                      <h3 className="text-xs font-semibold text-slate-200 mt-1 truncate">
+                      <h3 className="text-xs font-bold text-[#24242B] mt-1.5 truncate">
                         {comp.name}
                       </h3>
                       {comp.chemical_formula && (
-                        <span className="text-[10px] font-mono text-cyan-400">{comp.chemical_formula}</span>
+                        <span className="text-[10px] font-mono text-[#7461CE] font-medium block">
+                          {comp.chemical_formula}
+                        </span>
                       )}
                     </div>
                     <button
                       onClick={() => handleRemoveComponent(sc.component_id)}
-                      className="text-slate-500 hover:text-red-400 p-1 transition cursor-pointer"
-                      title="Remove component"
+                      className="text-[#A0A0A8] hover:text-[#C44141] p-1 transition-colors cursor-pointer"
+                      title="Remove from bench"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
-                  {/* Role Assignment */}
-                  <div className="pt-1 flex items-center justify-between text-xs">
-                    <label className="text-[11px] text-slate-400">Assigned Role:</label>
+                  {/* Assigned Role */}
+                  <div className="flex items-center justify-between text-xs pt-1 border-t border-[#E7E7EB]">
+                    <span className="text-[11px] text-[#777780]">Assigned Role:</span>
                     <select
                       value={sc.role}
                       onChange={e => handleRoleChange(sc.component_id, e.target.value as ComponentRole)}
-                      className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded px-2 py-0.5 focus:outline-none focus:border-emerald-500 font-mono"
+                      className="bg-white border border-[#E7E7EB] text-[#24242B] text-xs rounded-lg px-2.5 py-1 focus:outline-none focus:border-[#9785E8] font-medium"
                     >
                       {ROLES.map(role => (
                         <option key={role} value={role}>
@@ -194,15 +196,15 @@ export const LabBenchPage: React.FC<LabBenchPageProps> = ({
                     </select>
                   </div>
 
-                  {/* Concentration/Form Note */}
+                  {/* Concentration */}
                   <div className="flex items-center justify-between text-xs">
-                    <label className="text-[11px] text-slate-400">Concentration/Form:</label>
+                    <span className="text-[11px] text-[#777780]">Concentration / Form:</span>
                     <input
                       type="text"
                       value={sc.concentration || ''}
                       onChange={e => handleConcentrationChange(sc.component_id, e.target.value)}
                       placeholder="e.g. 10 mg/mL, 50 nM"
-                      className="bg-slate-900 border border-slate-800 text-slate-300 text-[11px] rounded px-2 py-0.5 w-32 focus:outline-none focus:border-emerald-500 font-mono text-right"
+                      className="bg-white border border-[#E7E7EB] text-[#24242B] text-[11px] rounded-lg px-2 py-1 w-32 focus:outline-none focus:border-[#9785E8] font-mono text-right"
                     />
                   </div>
                 </div>
@@ -212,33 +214,33 @@ export const LabBenchPage: React.FC<LabBenchPageProps> = ({
         )}
       </div>
 
-      {/* Main Library & Inspector Split */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Component Library */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-            {/* Search */}
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
+      {/* COMPONENT LIBRARY & INSPECTOR SPLIT */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        {/* LEFT 8 COLS: Search, Categories & Component Tiles */}
+        <div className="lg:col-span-8 bg-white rounded-2xl p-6 border border-[#E7E7EB] shadow-xs space-y-5">
+          {/* Search & Category Filter Pills */}
+          <div className="space-y-3">
+            <div className="relative">
+              <Search className="w-4 h-4 text-[#A0A0A8] absolute left-3.5 top-3" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search components (PET, IsPETase, EC 3.1.1.101, buffer)..."
-                className="w-full bg-slate-900/90 border border-slate-800 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                placeholder="Search components by name, EC number (3.1.1.101), formula, or mechanism..."
+                className="w-full bg-[#F7F7F8] border border-[#E7E7EB] rounded-xl pl-10 pr-4 py-2.5 text-xs text-[#24242B] placeholder-[#A0A0A8] focus:outline-none focus:border-[#9785E8] focus:bg-white transition-colors"
               />
             </div>
 
-            {/* Category tabs */}
-            <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
               {CATEGORIES.map(cat => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-2.5 py-1.5 rounded text-xs whitespace-nowrap transition cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
                     selectedCategory === cat
-                      ? 'bg-emerald-600 text-white font-medium'
-                      : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
+                      ? 'bg-[#9785E8] text-white'
+                      : 'bg-[#F7F7F8] text-[#777780] hover:text-[#24242B] border border-[#E7E7EB]'
                   }`}
                 >
                   {cat}
@@ -247,8 +249,8 @@ export const LabBenchPage: React.FC<LabBenchPageProps> = ({
             </div>
           </div>
 
-          {/* Component List Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[600px] overflow-y-auto pr-1">
+          {/* Component Tiles Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 max-h-[580px] overflow-y-auto pr-1">
             {filteredComponents.map(comp => {
               const isSelected = selectedCompMap.has(comp.id);
               const isInspected = activeInspectId === comp.id;
@@ -257,43 +259,43 @@ export const LabBenchPage: React.FC<LabBenchPageProps> = ({
                 <div
                   key={comp.id}
                   onClick={() => setActiveInspectId(comp.id)}
-                  className={`p-3.5 rounded-lg border transition cursor-pointer flex flex-col justify-between ${
+                  className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between space-y-3 ${
                     isInspected
-                      ? 'bg-slate-900 border-emerald-500/80 shadow-sm'
-                      : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
+                      ? 'bg-white border-[#9785E8] shadow-xs ring-1 ring-[#9785E8]/30'
+                      : 'bg-[#FAFAFC] border-[#E7E7EB] hover:border-[#D0D0D8] hover:bg-white'
                   }`}
                 >
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800">
+                      <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-white text-[#777780] border border-[#E7E7EB]">
                         {comp.category}
                       </span>
                       {comp.ec_number && (
-                        <span className="text-[10px] font-mono text-cyan-400">
+                        <span className="text-[10px] font-mono text-[#7461CE] font-semibold">
                           EC {comp.ec_number}
                         </span>
                       )}
                     </div>
-                    <h3 className="text-xs font-semibold text-slate-100">{comp.name}</h3>
-                    <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
+                    <h3 className="text-xs font-bold text-[#24242B]">{comp.name}</h3>
+                    <p className="text-[11px] text-[#777780] line-clamp-2 leading-relaxed">
                       {comp.description}
                     </p>
                   </div>
 
-                  <div className="pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs">
+                  <div className="pt-2 border-t border-[#E7E7EB] flex items-center justify-between text-xs">
                     <button
                       onClick={e => {
                         e.stopPropagation();
                         setActiveInspectId(comp.id);
                       }}
-                      className="text-slate-400 hover:text-cyan-400 flex items-center gap-1 text-[11px] cursor-pointer"
+                      className="text-[#777780] hover:text-[#9785E8] flex items-center gap-1 text-[11px] font-medium cursor-pointer"
                     >
                       <Info className="w-3 h-3" />
                       <span>Properties</span>
                     </button>
 
                     {isSelected ? (
-                      <span className="inline-flex items-center gap-1 text-emerald-400 text-xs font-medium font-mono">
+                      <span className="inline-flex items-center gap-1 text-[#2D8A6E] text-[11px] font-semibold">
                         <Check className="w-3.5 h-3.5" />
                         <span>On Bench</span>
                       </span>
@@ -303,10 +305,10 @@ export const LabBenchPage: React.FC<LabBenchPageProps> = ({
                           e.stopPropagation();
                           handleAddComponent(comp);
                         }}
-                        className="px-2.5 py-1 bg-emerald-600/90 hover:bg-emerald-500 text-white text-[11px] rounded font-medium flex items-center gap-1 transition cursor-pointer"
+                        className="px-2.5 py-1 bg-white hover:bg-[#EAE5FA] text-[#7461CE] border border-[#D5CBF7] text-[11px] rounded-lg font-semibold flex items-center gap-1 transition-colors cursor-pointer"
                       >
                         <Plus className="w-3 h-3" />
-                        <span>Add to Bench</span>
+                        <span>Add</span>
                       </button>
                     )}
                   </div>
@@ -316,16 +318,16 @@ export const LabBenchPage: React.FC<LabBenchPageProps> = ({
           </div>
         </div>
 
-        {/* Right: Component Deep Inspector */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-lg p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        {/* RIGHT 4 COLS: Component Biochemical Inspector */}
+        <div className="lg:col-span-4 bg-white rounded-2xl p-6 border border-[#E7E7EB] shadow-xs space-y-5">
+          <div className="flex items-center justify-between border-b border-[#E7E7EB] pb-3">
             <div className="flex items-center gap-2">
-              <Info className="w-4 h-4 text-cyan-400" />
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-300 font-mono">
-                Component Biochemical Profile
+              <Info className="w-4 h-4 text-[#9785E8]" />
+              <h2 className="text-xs font-bold uppercase tracking-wider text-[#24242B]">
+                Biochemical Profile
               </h2>
             </div>
-            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800">
+            <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-[#F7F7F8] text-[#777780] border border-[#E7E7EB]">
               {inspectedComponent?.category}
             </span>
           </div>
@@ -333,35 +335,35 @@ export const LabBenchPage: React.FC<LabBenchPageProps> = ({
           {inspectedComponent && (
             <div className="space-y-4 text-xs">
               <div>
-                <h3 className="text-sm font-semibold text-slate-100">{inspectedComponent.name}</h3>
+                <h3 className="text-sm font-bold text-[#24242B]">{inspectedComponent.name}</h3>
                 {inspectedComponent.chemical_formula && (
-                  <div className="text-xs font-mono text-cyan-400 mt-0.5">
+                  <div className="text-xs font-mono text-[#7461CE] font-medium mt-0.5">
                     Formula: {inspectedComponent.chemical_formula}
                   </div>
                 )}
                 {inspectedComponent.ec_number && (
-                  <div className="text-xs font-mono text-purple-400 mt-0.5">
-                    Enzyme Commission: EC {inspectedComponent.ec_number}
+                  <div className="text-xs font-mono text-[#777780] mt-0.5">
+                    Classification: EC {inspectedComponent.ec_number}
                   </div>
                 )}
-                <p className="text-slate-300 text-xs mt-2 leading-relaxed">
+                <p className="text-[#777780] text-xs mt-2 leading-relaxed">
                   {inspectedComponent.description}
                 </p>
               </div>
 
-              {/* Biochemical Properties Table */}
+              {/* Biophysical Constants Table */}
               <div className="space-y-2">
-                <h4 className="text-[11px] font-mono uppercase text-slate-400 font-semibold">
+                <span className="text-[10px] uppercase font-bold text-[#A0A0A8] tracking-wider block">
                   Biophysical Constants & Tolerances
-                </h4>
-                <div className="bg-slate-950 rounded border border-slate-800/80 divide-y divide-slate-800/60 font-mono text-[11px]">
+                </span>
+                <div className="bg-[#FAF9FD] rounded-xl border border-[#EAE5FA] divide-y divide-[#EAE5FA] text-[11px]">
                   {Object.entries(inspectedComponent.properties).map(([key, val]) => {
                     const formattedKey = key.replace(/_/g, ' ');
                     const formattedVal = Array.isArray(val) ? val.join(' · ') : String(val);
                     return (
-                      <div key={key} className="p-2 flex items-start justify-between gap-2">
-                        <span className="text-slate-500 capitalize">{formattedKey}:</span>
-                        <span className="text-slate-200 text-right font-medium max-w-[200px] truncate">
+                      <div key={key} className="p-2.5 flex items-start justify-between gap-2">
+                        <span className="text-[#777780] capitalize">{formattedKey}:</span>
+                        <span className="text-[#24242B] text-right font-medium max-w-[180px] truncate font-mono">
                           {formattedVal}
                         </span>
                       </div>
@@ -372,14 +374,14 @@ export const LabBenchPage: React.FC<LabBenchPageProps> = ({
 
               {/* Supported Roles */}
               <div>
-                <h4 className="text-[11px] font-mono uppercase text-slate-400 font-semibold mb-1.5">
+                <span className="text-[10px] uppercase font-bold text-[#A0A0A8] tracking-wider block mb-1.5">
                   Permitted Reaction Roles
-                </h4>
+                </span>
                 <div className="flex flex-wrap gap-1.5">
                   {inspectedComponent.supported_roles.map(r => (
                     <span
                       key={r}
-                      className="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700"
+                      className="px-2 py-0.5 rounded text-[10px] font-medium bg-[#F7F7F8] text-[#24242B] border border-[#E7E7EB]"
                     >
                       {r}
                     </span>
@@ -387,12 +389,12 @@ export const LabBenchPage: React.FC<LabBenchPageProps> = ({
                 </div>
               </div>
 
-              {/* Add/Remove CTA */}
+              {/* Action Button */}
               <div className="pt-2">
                 {selectedCompMap.has(inspectedComponent.id) ? (
                   <button
                     onClick={() => handleRemoveComponent(inspectedComponent.id)}
-                    className="w-full py-2 bg-red-950/40 hover:bg-red-900/40 text-red-300 border border-red-800/60 rounded text-xs font-medium transition cursor-pointer flex items-center justify-center gap-1.5"
+                    className="w-full py-2 bg-[#FCEEEE] hover:bg-[#F8E1E1] text-[#C44141] border border-[#F8C8C8] rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Remove from Lab Bench</span>
@@ -400,7 +402,7 @@ export const LabBenchPage: React.FC<LabBenchPageProps> = ({
                 ) : (
                   <button
                     onClick={() => handleAddComponent(inspectedComponent)}
-                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5"
+                    className="w-full py-2 bg-[#9785E8] hover:bg-[#8673DC] text-white rounded-xl text-xs font-semibold transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Add to Active Bench</span>
@@ -410,6 +412,7 @@ export const LabBenchPage: React.FC<LabBenchPageProps> = ({
             </div>
           )}
         </div>
+
       </div>
     </div>
   );

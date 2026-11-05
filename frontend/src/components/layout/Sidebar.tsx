@@ -4,10 +4,11 @@ import {
   FlaskConical,
   Gauge,
   Activity,
-  Bot,
   BookOpen,
+  Bot,
   Settings as SettingsIcon,
   Sparkles,
+  Dna,
 } from 'lucide-react';
 
 export type SectionType =
@@ -15,8 +16,8 @@ export type SectionType =
   | 'bench'
   | 'chamber'
   | 'results'
-  | 'ai-assistant'
   | 'evidence'
+  | 'ai-assistant'
   | 'settings';
 
 interface SidebarProps {
@@ -34,92 +35,128 @@ export const Sidebar: React.FC<SidebarProps> = ({
   hasResults,
   aiConfigured,
 }) => {
-  const items: Array<{
+  const navItems: Array<{
     id: SectionType;
     label: string;
     icon: React.ComponentType<{ className?: string }>;
     badge?: string | number;
-    badgeColor?: string;
   }> = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
     {
       id: 'bench',
       label: 'Lab Bench',
       icon: FlaskConical,
-      badge: selectedComponentCount,
-      badgeColor: 'bg-emerald-900/60 text-emerald-300 border-emerald-700/60',
+      badge: selectedComponentCount > 0 ? selectedComponentCount : undefined,
     },
     { id: 'chamber', label: 'Environment Chamber', icon: Gauge },
     {
       id: 'results',
       label: 'Experiment Results',
       icon: Activity,
-      badge: hasResults ? 'Ready' : undefined,
-      badgeColor: 'bg-blue-900/60 text-blue-300 border-blue-700/60',
     },
+    { id: 'evidence', label: 'Evidence Library', icon: BookOpen },
     {
       id: 'ai-assistant',
       label: 'AI Scientific Assistant',
       icon: Bot,
-      badge: aiConfigured ? 'Active' : 'BYOK',
-      badgeColor: aiConfigured
-        ? 'bg-purple-900/60 text-purple-300 border-purple-700/60'
-        : 'bg-slate-800 text-slate-400 border-slate-700',
     },
-    { id: 'evidence', label: 'Evidence Library', icon: BookOpen },
-    { id: 'settings', label: 'AI Settings (BYOK)', icon: SettingsIcon },
   ];
 
   return (
-    <aside className="w-64 border-r border-slate-800 bg-[#0a0e17] flex flex-col justify-between p-3 select-none shrink-0 min-h-[calc(100vh-3.5rem)]">
-      <div className="space-y-1">
-        <div className="px-3 py-2 text-[10px] font-mono uppercase tracking-wider text-slate-500 font-semibold">
-          Workstation Navigation
+    <aside className="w-64 border-r border-[#E7E7EB] bg-[#F7F7F8] flex flex-col justify-between p-4 select-none shrink-0 min-h-[calc(100vh-4rem)]">
+      {/* Brand Header & Main Nav */}
+      <div className="space-y-6">
+        {/* Brand */}
+        <div className="flex items-center gap-3 px-2 py-1">
+          <div className="w-9 h-9 rounded-xl bg-[#EAE5FA] flex items-center justify-center text-[#9785E8]">
+            <Dna className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="font-bold text-sm tracking-tight text-[#24242B]">
+              PolyPhage AI
+            </div>
+            <div className="text-[11px] text-[#777780] font-medium">
+              Biotech Workstation
+            </div>
+          </div>
         </div>
-        {items.map(item => {
-          const Icon = item.icon;
-          const isActive = activeSection === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => onSelectSection(item.id)}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-md text-xs font-medium transition-colors text-left cursor-pointer ${
-                isActive
-                  ? 'bg-slate-800 text-slate-100 font-semibold border-l-2 border-emerald-500 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/80'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Icon
-                  className={`w-4 h-4 ${
-                    isActive ? 'text-emerald-400' : 'text-slate-500 group-hover:text-slate-300'
-                  }`}
-                />
-                <span>{item.label}</span>
-              </div>
-              {item.badge !== undefined && (
-                <span
-                  className={`px-1.5 py-0.5 rounded text-[10px] font-mono border ${
-                    item.badgeColor || 'bg-slate-800 text-slate-400 border-slate-700'
-                  }`}
-                >
-                  {item.badge}
-                </span>
-              )}
-            </button>
-          );
-        })}
+
+        {/* Navigation List */}
+        <nav className="space-y-1">
+          <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A8]">
+            Laboratory Navigation
+          </div>
+          {navItems.map(item => {
+            const Icon = item.icon;
+            const isActive = activeSection === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => onSelectSection(item.id)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-colors text-left cursor-pointer ${
+                  isActive
+                    ? 'bg-[#EAE5FA] text-[#7461CE] font-semibold'
+                    : 'text-[#777780] hover:text-[#24242B] hover:bg-[#EFEFF1]'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Icon
+                    className={`w-4 h-4 ${
+                      isActive ? 'text-[#9785E8]' : 'text-[#777780]'
+                    }`}
+                  />
+                  <span>{item.label}</span>
+                </div>
+                {item.badge !== undefined && (
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                      isActive
+                        ? 'bg-white text-[#9785E8]'
+                        : 'bg-[#E7E7EB] text-[#777780]'
+                    }`}
+                  >
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
       </div>
 
-      {/* Protocol & Climate Footprint Note */}
-      <div className="p-3 bg-slate-950 rounded border border-slate-800/80 text-[11px] text-slate-400 space-y-1.5">
-        <div className="flex items-center gap-1.5 text-slate-300 font-semibold">
-          <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Circular Climate Goal</span>
+      {/* Bottom Area: AI Status & Settings */}
+      <div className="space-y-2 pt-4 border-t border-[#E7E7EB]">
+        {/* Subtle AI Status Card */}
+        <div className="p-3 bg-white rounded-xl border border-[#E7E7EB] text-xs space-y-1">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-medium text-[#777780]">AI Copilot</span>
+            <span
+              className={`w-2 h-2 rounded-full ${
+                aiConfigured ? 'bg-[#72C7B0]' : 'bg-[#D0D0D6]'
+              }`}
+            />
+          </div>
+          <p className="text-[11px] text-[#24242B] font-medium">
+            {aiConfigured ? 'Connected (BYOK)' : 'Idle · Optional BYOK'}
+          </p>
         </div>
-        <p className="text-[10px] text-slate-400 leading-relaxed">
-          PolyPhage AI investigates biological enzymatic routes to depolymerize synthetic plastics at low energetic footprints, diverting solid waste from incineration.
-        </p>
+
+        {/* Settings Tab Button */}
+        <button
+          onClick={() => onSelectSection('settings')}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-colors text-left cursor-pointer ${
+            activeSection === 'settings'
+              ? 'bg-[#EAE5FA] text-[#7461CE] font-semibold'
+              : 'text-[#777780] hover:text-[#24242B] hover:bg-[#EFEFF1]'
+          }`}
+        >
+          <SettingsIcon
+            className={`w-4 h-4 ${
+              activeSection === 'settings' ? 'text-[#9785E8]' : 'text-[#777780]'
+            }`}
+          />
+          <span>AI Settings (BYOK)</span>
+        </button>
       </div>
     </aside>
   );

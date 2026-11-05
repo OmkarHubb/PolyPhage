@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Sparkles, Dna, ShieldAlert, KeyRound } from 'lucide-react';
+import { Play, Sparkles, KeyRound, FlaskConical } from 'lucide-react';
 import { AISettings } from '../../types';
 
 interface HeaderProps {
@@ -8,8 +8,6 @@ interface HeaderProps {
   onRunAssessment: () => void;
   aiSettings: AISettings | null;
   onNavigateToSettings: () => void;
-  activeSection: string;
-  onNavigate: (section: string) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -18,58 +16,52 @@ export const Header: React.FC<HeaderProps> = ({
   onRunAssessment,
   aiSettings,
   onNavigateToSettings,
-  activeSection,
-  onNavigate,
 }) => {
   return (
-    <header className="h-14 border-b border-slate-800 bg-[#0d121d] px-5 flex items-center justify-between sticky top-0 z-30 select-none">
+    <header className="h-16 border-b border-[#E7E7EB] bg-white px-6 flex items-center justify-between sticky top-0 z-30 select-none">
+      {/* Current Experiment Identifier */}
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-          <Dna className="w-5 h-5" />
+        <div className="w-8 h-8 rounded-lg bg-[#EAE5FA] flex items-center justify-center text-[#9785E8]">
+          <FlaskConical className="w-4 h-4" />
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-bold text-sm tracking-wide text-slate-100">PolyPhage AI</span>
-            <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 font-semibold">
-              AI for Climate Change
+            <span className="text-xs text-[#777780] font-medium">Active Experiment:</span>
+            <span className="font-semibold text-sm text-[#24242B] truncate max-w-md">
+              {experimentName}
             </span>
           </div>
-          <p className="text-[11px] text-slate-400 font-mono truncate max-w-sm">
-            Biocatalytic Plastic Degradation Research Station
+          <p className="text-[11px] text-[#777780]">
+            Deterministic Assessment & Reaction Modeling
           </p>
         </div>
       </div>
 
+      {/* Right Controls */}
       <div className="flex items-center gap-3">
-        {/* Active Experiment Pill */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-slate-900/90 rounded border border-slate-800 text-xs">
-          <span className="text-slate-400">Active Workstation:</span>
-          <span className="text-slate-200 font-medium truncate max-w-xs">{experimentName}</span>
-        </div>
-
-        {/* AI Status Badge with BYOK link */}
+        {/* AI BYOK Status Badge */}
         <button
           onClick={onNavigateToSettings}
-          title="Click to configure AI Provider (BYOK)"
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs border transition-all ${
+          title="Configure AI Provider (BYOK)"
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
             aiSettings?.is_active
-              ? 'bg-purple-950/40 text-purple-300 border-purple-800/60 hover:bg-purple-900/40'
-              : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
+              ? 'bg-[#EAE5FA] text-[#7461CE] border-[#D5CBF7] hover:bg-[#E2DBF8]'
+              : 'bg-[#F7F7F8] text-[#777780] border-[#E7E7EB] hover:bg-[#EFEFF1] hover:text-[#24242B]'
           }`}
         >
-          <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+          <Sparkles className="w-3.5 h-3.5 text-[#9785E8]" />
           <span>{aiSettings?.is_active ? `AI: ${aiSettings.provider} (${aiSettings.model})` : 'AI: Idle (BYOK)'}</span>
-          <KeyRound className="w-3 h-3 text-slate-500 ml-0.5" />
+          <KeyRound className="w-3 h-3 text-[#A0A0A8] ml-0.5" />
         </button>
 
-        {/* Run Assessment Action Button */}
+        {/* Run Assessment Action */}
         <button
           onClick={onRunAssessment}
           disabled={isAssessing}
-          className="flex items-center gap-2 px-4 py-1.5 rounded-md font-medium text-xs bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-xs bg-[#9785E8] hover:bg-[#8673DC] text-white shadow-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           <Play className="w-3.5 h-3.5 fill-current" />
-          <span>{isAssessing ? 'Assessing Rules...' : 'Run Scientific Assessment'}</span>
+          <span>{isAssessing ? 'Running Assessment...' : 'Run Scientific Assessment'}</span>
         </button>
       </div>
     </header>

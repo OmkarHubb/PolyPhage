@@ -31,3 +31,4 @@ class SelectedComponent(BaseModel):
     role: ComponentRole
     concentration: Optional[str] = None
     notes: Optional[str] = None
+

@@ -87,3 +87,4 @@ class LocalCredentialManager:
         self._save_to_disk()
 
 credential_manager = LocalCredentialManager()
+

@@ -23,3 +23,4 @@ class ExperimentConfig(BaseModel):
     description: Optional[str] = None
     selected_components: List[SelectedComponent] = Field(min_length=1)
     environment: EnvironmentConditions
+
