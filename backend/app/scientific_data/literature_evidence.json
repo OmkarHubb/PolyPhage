@@ -1,0 +1,178 @@
+[
+  {
+    "id": "ref_yoshida_2016",
+    "title": "A bacterium that degrades and assimilates poly(ethylene terephthalate)",
+    "authors": "Yoshida, S., Hiraga, K., Takehana, T., Taniguchi, I., Yamaji, H., Maeda, Y., Toyohara, K., Miyamoto, K., Kimura, Y., & Oda, K.",
+    "journal": "Science",
+    "year": 2016,
+    "volume_issue_pages": "351(6278): 1196-1199",
+    "doi": "10.1126/science.aad6359",
+    "url": "https://doi.org/10.1126/science.aad6359",
+    "verified": true,
+    "evidence_level": "experimental",
+    "abstract_summary": "Isolation of Ideonella sakaiensis 201-F6 from environmental consortium capable of growing on low-crystallinity PET films. Identification of two core hydrolytic enzymes: PETase (ISF6_4831) and MHETase (ISF6_0224).",
+    "key_findings": [
+      "I. sakaiensis 201-F6 utilizes PET as primary carbon and energy source for growth.",
+      "ISF6_4831 (PETase) converts PET into mono-(2-hydroxyethyl) terephthalate (MHET) with minor yields of bis(2-hydroxyethyl) terephthalate (BHET) and terephthalic acid (TPA).",
+      "ISF6_0224 (MHETase) further hydrolyzes MHET into monomeric TPA and ethylene glycol (EG).",
+      "Native PETase shows higher catalytic activity towards low-crystallinity (amorphous) PET film at 30°C than cutinases from Thermobifida fusca or lipases."
+    ],
+    "experimental_conditions_reported": {
+      "temperature_celsius": 30.0,
+      "ph": 7.0,
+      "buffer": "50 mM sodium phosphate buffer",
+      "substrate_type": "Low-crystallinity (1.9%) amorphous PET film"
+    }
+  },
+  {
+    "id": "ref_austin_2018",
+    "title": "Characterization and engineering of a plastic-degrading aromatic polyesterase",
+    "authors": "Austin, H. P., Allen, M. D., Donohoe, B. S., Rorrer, N. A., LeFebvre, F. L., Schwab, B. C., Jayasinghe, R., Eaton, B. L., Gallagher, D. J., Halliwell, R. T., Johnson, C. W., Smith, P. G., Michener, C. A., Sun, Y., & McGeehan, J. B.",
+    "journal": "Proceedings of the National Academy of Sciences (PNAS)",
+    "year": 2018,
+    "volume_issue_pages": "115(19): E4350-E4357",
+    "doi": "10.1073/pnas.1718804115",
+    "url": "https://doi.org/10.1073/pnas.1718804115",
+    "verified": true,
+    "evidence_level": "experimental",
+    "abstract_summary": "High-resolution crystal structure determination (0.92 Å) of Ideonella sakaiensis PETase revealing a more open active-site cleft compared to canonical cutinases, and structure-guided protein engineering producing double mutant S238F/W159H with increased catalytic activity.",
+    "key_findings": [
+      "PETase active site cleft is notably wider (~3-5 Å wider) than homologous cutinases, accommodating aromatic polyester chains.",
+      "Conservation of the canonical Ser160-His237-Asp206 catalytic triad within an alpha/beta-hydrolase fold.",
+      "Engineered variant S238F/W159H exhibited enhanced degradation of post-consumer PET bottle material.",
+      "Demonstrated enzymatic degradation capability on bio-based polyester polyethylene 2,5-furandicarboxylate (PEF).",
+      "Wild-type PETase thermotolerance is constrained; thermal denaturation onset observed between 42°C and 48°C."
+    ],
+    "experimental_conditions_reported": {
+      "temperature_celsius": 30.0,
+      "ph": 7.2,
+      "buffer": "50 mM sodium phosphate, 100 mM NaCl",
+      "substrate_type": "PET coupons (bottle grade and amorphous)"
+    }
+  },
+  {
+    "id": "ref_tournier_2020",
+    "title": "An engineered PET depolymerase to break down and recycle plastic bottles",
+    "authors": "Tournier, V., Topham, C. M., Gilles, A., David, B., Folgoas, C., Moya-Leclair, E., Kamionka, E., Desrousseaux, M., Texier, H., Gavalda, S., Cot, M. N., Guémard, E., Dalibey, M., Nomme, J., Vivani, G., et al.",
+    "journal": "Nature",
+    "year": 2020,
+    "volume_issue_pages": "580(7802): 216-219",
+    "doi": "10.1038/s41586-020-2149-4",
+    "url": "https://doi.org/10.1038/s41586-020-2149-4",
+    "verified": true,
+    "evidence_level": "experimental",
+    "abstract_summary": "Development of an engineered leaf-branch compost cutinase (LCC-ICCG: F243I/D238C/S283C/Y127G) operating at elevated temperatures (72°C) near the glass transition temperature of PET, achieving 90% depolymerization within 10 hours.",
+    "key_findings": [
+      "Engineered disulfide bridge (D238C/S283C) elevated melting temperature (Tm) by 9.8°C to allow prolonged reaction at 72°C.",
+      "Depolymerization at 72°C exploits polymer chain mobility near the PET glass transition temperature (Tg ~67-75°C).",
+      "Demonstrated recycling loop: recycled terephthalic acid purified from digest was re-polymerized into virgin-quality transparent PET bottles.",
+      "Activity highly dependent on neutral-to-slightly basic pH (optimum around pH 8.0) and rapid base titration to neutralize released terephthalic acid."
+    ],
+    "experimental_conditions_reported": {
+      "temperature_celsius": 72.0,
+      "ph": 8.0,
+      "buffer": "100 mM potassium phosphate buffer with automated NaOH neutralization",
+      "substrate_type": "Post-consumer micronized amorphous PET"
+    }
+  },
+  {
+    "id": "ref_lu_2022",
+    "title": "Machine learning-aided engineering of hydrolases for PET depolymerization",
+    "authors": "Lu, H., Diaz, D. J., Czarnecki, N. J., Zhu, C., Kim, W., Shroff, R., Acosta, D. J., Alexander, B. R., Cole, H. O., Zhang, Y., et al.",
+    "journal": "Nature",
+    "year": 2022,
+    "volume_issue_pages": "604(7907): 662-667",
+    "doi": "10.1038/s41586-022-04599-z",
+    "url": "https://doi.org/10.1038/s41586-022-04599-z",
+    "verified": true,
+    "evidence_level": "experimental",
+    "abstract_summary": "Structure-based machine learning algorithm (MutCompute) utilized to engineer FAST-PETase (N233K/R224Q/S121E/D186H/R280A), conferring superior thermal stability and catalytic depolymerization rate at 50°C across untreated post-consumer plastics.",
+    "key_findings": [
+      "FAST-PETase contains 5 consensus and scaffold-stabilizing mutations yielding a melting temperature increase of 8.8°C over wild type.",
+      "Achieved depolymerization across 51 diverse untreated post-consumer PET items.",
+      "Operates efficiently in an intermediate temperature regime (40-50°C), reducing thermal energy input compared to thermophilic cutinases.",
+      "Robust activity retained across pH range of 6.5 to 8.0."
+    ],
+    "experimental_conditions_reported": {
+      "temperature_celsius": 50.0,
+      "ph": 8.0,
+      "buffer": "100 mM potassium phosphate",
+      "substrate_type": "Untreated post-consumer commercial PET containers"
+    }
+  },
+  {
+    "id": "ref_palm_2019",
+    "title": "Structure of the plastic-degrading enzyme MHETase and its catalytic mechanism",
+    "authors": "Palm, G. J., Reisky, L., Böttcher, D., Müller, H., Michels, E. A. P., Walczak, M. C., Berndt, M. D., Weiss, F., Bornscheuer, U. T., & Weber, G.",
+    "journal": "Nature Communications",
+    "year": 2019,
+    "volume_issue_pages": "10: 1717",
+    "doi": "10.1038/s41467-019-09326-3",
+    "url": "https://doi.org/10.1038/s41467-019-09326-3",
+    "verified": true,
+    "evidence_level": "experimental",
+    "abstract_summary": "Structural and functional characterization of Ideonella sakaiensis MHETase (PDB: 6QGA) resolving the molecular mechanism for hydrolysis of mono-(2-hydroxyethyl) terephthalate to terephthalic acid and ethylene glycol.",
+    "key_findings": [
+      "MHETase belongs to the alpha/beta-hydrolase superfamily with an engineered lid domain providing substrate specificity.",
+      "Strict substrate specificity for mono-(2-hydroxyethyl) terephthalate (MHET); minimal activity on intact PET polymers.",
+      "Active site residues Ser225, His528, and Asp492 form the canonical catalytic triad.",
+      "Relieves product inhibition on PETase: accumulation of MHET slows PETase rate; co-incubation with MHETase accelerates net PET breakdown."
+    ],
+    "experimental_conditions_reported": {
+      "temperature_celsius": 30.0,
+      "ph": 7.5,
+      "buffer": "50 mM Tris-HCl, 150 mM NaCl",
+      "substrate_type": "Soluble MHET substrate"
+    }
+  },
+  {
+    "id": "ref_taniguchi_2019",
+    "title": "Analysis of the biodegradation of poly(ethylene terephthalate) by Ideonella sakaiensis",
+    "authors": "Taniguchi, I., Yoshida, S., Hiraga, K., Miyamoto, K., Kimura, Y., & Oda, K.",
+    "journal": "ACS Catalysis",
+    "year": 2019,
+    "volume_issue_pages": "9(5): 4089-4105",
+    "doi": "10.1021/acscatal.8b05171",
+    "url": "https://doi.org/10.1021/acscatal.8b05171",
+    "verified": true,
+    "evidence_level": "experimental",
+    "abstract_summary": "Comprehensive analysis of PET biodegradation kinetics by Ideonella sakaiensis cells and purified enzymes, evaluating surface morphology, crystallinity boundaries, and enzyme secretion dynamics.",
+    "key_findings": [
+      "PETase preferentially attacks ester linkages in the mobile, amorphous surface regions of PET.",
+      "High-crystallinity biaxially oriented PET (BOPET) exhibits markedly slower hydrolysis than amorphous PET.",
+      "Secreted PETase adheres to the polymer surface via hydrophobic residues flanking the catalytic groove.",
+      "Metabolic flux in vivo channels TPA via 1,2-dioxygenase pathway to protocatechuic acid and Krebs cycle intermediates."
+    ],
+    "experimental_conditions_reported": {
+      "temperature_celsius": 30.0,
+      "ph": 7.0,
+      "buffer": "Mineral salt medium with low-crystallinity PET film",
+      "substrate_type": "Commercial amorphous and crystalline PET specimens"
+    }
+  },
+  {
+    "id": "ref_kawai_2019",
+    "title": "The Current State of Research on PET Hydrolyzing Enzymes Available for Biorecycling",
+    "authors": "Kawai, F., Kawabata, T., & Oda, M.",
+    "journal": "Catalysts",
+    "year": 2019,
+    "volume_issue_pages": "9(11): 888",
+    "doi": "10.3390/catal9110888",
+    "url": "https://doi.org/10.3390/catal9110888",
+    "verified": true,
+    "evidence_level": "literature_supported",
+    "abstract_summary": "Review and comparative benchmark of polyester hydrolases, cutinases, and esterases capable of PET depolymerization, contrasting mesophilic PETases with thermophilic bacterial cutinases.",
+    "key_findings": [
+      "Depolymerization rate strongly correlates with reaction temperature relative to PET glass transition temperature (Tg ~65-75°C in water).",
+      "Mesophilic enzymes (e.g. wild-type IsPETase) operate below Tg where polymer chain flexibility is low, requiring longer incubation.",
+      "Thermophilic enzymes (e.g., LCC, TfCut2) operate near Tg where chain accessibility is substantially elevated.",
+      "Acidification from produced terephthalic acid requires active buffering to prevent enzyme inactivation."
+    ],
+    "experimental_conditions_reported": {
+      "temperature_celsius": 65.0,
+      "ph": 7.5,
+      "buffer": "Comparative literature assessment",
+      "substrate_type": "PET film and powder"
+    }
+  }
+]

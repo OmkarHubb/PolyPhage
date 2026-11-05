@@ -1,0 +1,29 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.venv/
+env/
+venv/
+ENV/
+
+# Local credentials (BYOK safety)
+.credentials_local.json
+backend/.credentials_local.json
+.env
+backend/.env
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db

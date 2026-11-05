@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-main: #0a0d14;
+    --bg-surface: #111622;
+    --bg-card: #161c2d;
+    --bg-muted: #1c2438;
+    --border-subtle: #242f47;
+    --border-strong: #334263;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-bio: #10b981;     /* emerald for biologicals */
+    --accent-chem: #06b6d4;    /* cyan for chemistry / plastic */
+    --accent-warn: #f59e0b;    /* amber for thermal alerts */
+    --accent-alert: #ef4444;   /* red for denaturation */
+    --accent-primary: #3b82f6; /* cobalt / blue */
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  #root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    max-width: 100% !important;
+    width: 100% !important;
+    border-inline: none !important;
+    text-align: left !important;
+  }
+}
+
+/* Custom scrollbars for dense workstation tables & sidebars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0d111b;
+}
+::-webkit-scrollbar-thumb {
+  background: #232e47;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334263;
+}
+
+/* React Flow custom dark theme */
+.react-flow__renderer {
+  background: #0c101a !important;
+}
+.react-flow__edge-path {
+  stroke: #3b82f6 !important;
+  stroke-width: 2;
+}
+.react-flow__handle {
+  background: #06b6d4 !important;
+  border: 2px solid #0f172a !important;
+  width: 8px !important;
+  height: 8px !important;
+}

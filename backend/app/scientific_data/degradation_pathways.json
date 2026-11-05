@@ -1,0 +1,171 @@
+[
+  {
+    "id": "pathway_pet_primary_hydrolysis",
+    "name": "PET Surface Ester Depolymerization (PETase primary cleavage)",
+    "description": "Endo- and exo-type cleavage of ester linkages in accessible amorphous segments of Poly(ethylene terephthalate) by PET-hydrolyzing esterases.",
+    "substrate_id": "comp_pet",
+    "primary_enzyme_ids": ["comp_ispetase", "comp_fast_petase"],
+    "co_enzyme_ids": ["comp_mhetase"],
+    "required_conditions": {
+      "temperature_min": 20.0,
+      "temperature_max": 55.0,
+      "ph_min": 6.0,
+      "ph_max": 9.0,
+      "aqueous_environment": true
+    },
+    "reaction_steps": [
+      {
+        "step_order": 1,
+        "name": "Enzyme Adsorption & Ester Docking",
+        "mechanism": "PETase hydrophobic cleft interacts with the aromatic ring of the polymer chain, aligning the ester carbonyl carbon with the Ser160 nucleophile.",
+        "substrates": ["Amorphous PET segment", "H2O"],
+        "catalysts": ["PETase (Ser160-His237-Asp206)"],
+        "intermediates": ["Tetrahedral oxyanion acyl-enzyme intermediate"],
+        "evidence_id": "ref_austin_2018"
+      },
+      {
+        "step_order": 2,
+        "name": "Ester Bond Hydrolysis & Primary Intermediate Release",
+        "mechanism": "Nucleophilic attack followed by water-mediated hydrolysis yielding soluble mono-(2-hydroxyethyl) terephthalate (MHET) as major product, alongside minor bis(2-hydroxyethyl) terephthalate (BHET) and free terephthalic acid (TPA).",
+        "products": [
+          {
+            "id": "prod_mhet",
+            "name": "Mono-(2-hydroxyethyl) terephthalate (MHET)",
+            "formula": "C10H10O5",
+            "molar_mass": "210.18 g/mol",
+            "solubility": "Water soluble",
+            "is_major_product": true,
+            "biological_impact": "Feedback inhibitor of PETase catalytic turnover at elevated concentrations."
+          },
+          {
+            "id": "prod_bhet",
+            "name": "Bis(2-hydroxyethyl) terephthalate (BHET)",
+            "formula": "C12H14O6",
+            "molar_mass": "254.24 g/mol",
+            "solubility": "Slightly water soluble",
+            "is_major_product": false,
+            "biological_impact": "Trace intermediate from dual end-chain cleavage."
+          },
+          {
+            "id": "prod_tpa",
+            "name": "Terephthalic Acid (TPA)",
+            "formula": "C8H6O4",
+            "molar_mass": "166.13 g/mol",
+            "solubility": "Low water solubility at acidic pH; ionizes to terephthalate at pH >5",
+            "is_major_product": false,
+            "biological_impact": "Direct precursor for repolymerization; causes progressive medium acidification."
+          }
+        ],
+        "evidence_id": "ref_yoshida_2016"
+      }
+    ],
+    "environmental_implications": {
+      "carbon_fate": "Conversion of persistent macromolecular polymer into water-soluble aromatic monomers.",
+      "toxicity_profile": "Non-toxic biodegradable intermediate metabolites; MHET and TPA are non-bioaccumulative under aerobic composting.",
+      "ph_impact": "Continuous release of carboxylic acid protons (pKa1 ~3.5, pKa2 ~4.46) reduces medium pH if unbuffered, leading to self-limiting enzyme denaturation."
+    },
+    "evidence_ids": ["ref_yoshida_2016", "ref_austin_2018", "ref_taniguchi_2019"]
+  },
+  {
+    "id": "pathway_mhet_terminal_hydrolysis",
+    "name": "MHET Secondary Hydrolysis (MHETase cleavage)",
+    "description": "Specific hydrolysis of mono-(2-hydroxyethyl) terephthalate into monomeric terephthalic acid (TPA) and ethylene glycol (EG).",
+    "substrate_id": "prod_mhet",
+    "primary_enzyme_ids": ["comp_mhetase"],
+    "co_enzyme_ids": [],
+    "required_conditions": {
+      "temperature_min": 20.0,
+      "temperature_max": 42.0,
+      "ph_min": 6.5,
+      "ph_max": 8.5,
+      "aqueous_environment": true
+    },
+    "reaction_steps": [
+      {
+        "step_order": 1,
+        "name": "MHET Coordination in Catalytic Pocket",
+        "mechanism": "Lid domain coordinates the benzoic acid moiety of MHET while the ester bond is positioned adjacent to Ser225.",
+        "substrates": ["MHET", "H2O"],
+        "catalysts": ["MHETase (Ser225-Asp492-His528)"],
+        "products": [
+          {
+            "id": "prod_tpa",
+            "name": "Terephthalic Acid (TPA)",
+            "formula": "C8H6O4",
+            "molar_mass": "166.13 g/mol",
+            "solubility": "Insoluble acid; soluble as terephthalate dianion",
+            "is_major_product": true,
+            "biological_impact": "Pure repolymerization feedstock for circular virgin-grade PET."
+          },
+          {
+            "id": "prod_eg",
+            "name": "Ethylene Glycol (EG)",
+            "formula": "C2H6O2",
+            "molar_mass": "62.07 g/mol",
+            "solubility": "Completely miscible in water",
+            "is_major_product": true,
+            "biological_impact": "Readily assimilated by environmental microorganisms as carbon source; low aquatic toxicity at low concentrations."
+          }
+        ],
+        "evidence_id": "ref_palm_2019"
+      }
+    ],
+    "environmental_implications": {
+      "carbon_fate": "Complete mineralizable or recyclable monomer recovery.",
+      "toxicity_profile": "Ethylene glycol readily biodegrades under aerobic environmental conditions (BOD5/COD > 0.6).",
+      "ph_impact": "Net release of 1 mol H+ per mol MHET hydrolyzed."
+    },
+    "evidence_ids": ["ref_yoshida_2016", "ref_palm_2019"]
+  },
+  {
+    "id": "pathway_lcc_thermophilic_depolymerization",
+    "name": "Thermophilic PET Total Depolymerization (LCC-ICCG Cutinase)",
+    "description": "High-temperature direct catalytic breakdown of post-consumer PET near its glass-transition temperature (72°C) yielding monomeric TPA and EG.",
+    "substrate_id": "comp_pet",
+    "primary_enzyme_ids": ["comp_lcc_iccg"],
+    "co_enzyme_ids": ["comp_cacl2", "comp_naoh_titrant"],
+    "required_conditions": {
+      "temperature_min": 60.0,
+      "temperature_max": 75.0,
+      "ph_min": 7.5,
+      "ph_max": 8.5,
+      "aqueous_environment": true
+    },
+    "reaction_steps": [
+      {
+        "step_order": 1,
+        "name": "High-Mobility Thermal Depolymerization",
+        "mechanism": "At 72°C, polymer chain mobility at amorphous domains is elevated (Tg regime). Engineered disulfide-stabilized LCC-ICCG cuts internal and terminal ester bonds rapidly without requiring separate MHETase.",
+        "substrates": ["Amorphous/Micronized PET", "H2O"],
+        "catalysts": ["LCC-ICCG (Ser165-Asp210-His242)"],
+        "products": [
+          {
+            "id": "prod_tpa",
+            "name": "Terephthalic Acid (TPA)",
+            "formula": "C8H6O4",
+            "molar_mass": "166.13 g/mol",
+            "solubility": "Dianion in buffered base",
+            "is_major_product": true,
+            "biological_impact": "Direct recycling monomer."
+          },
+          {
+            "id": "prod_eg",
+            "name": "Ethylene Glycol (EG)",
+            "formula": "C2H6O2",
+            "molar_mass": "62.07 g/mol",
+            "solubility": "Completely miscible in water",
+            "is_major_product": true,
+            "biological_impact": "Re-usable diol monomer."
+          }
+        ],
+        "evidence_id": "ref_tournier_2020"
+      }
+    ],
+    "environmental_implications": {
+      "carbon_fate": "Rapid closed-loop bottle-to-bottle recycling without petrochemical cracking.",
+      "toxicity_profile": "Eliminates toxic chemical recycling solvents (e.g. glycolysis heavy metal catalysts).",
+      "ph_impact": "Severe rapid acidification occurs within hours; requires automated base addition (NaOH)."
+    },
+    "evidence_ids": ["ref_tournier_2020", "ref_kawai_2019"]
+  }
+]

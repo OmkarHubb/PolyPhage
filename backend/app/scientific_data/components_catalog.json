@@ -1,0 +1,220 @@
+[
+  {
+    "id": "comp_pet",
+    "name": "Poly(ethylene terephthalate) (PET)",
+    "category": "Plastics",
+    "chemical_formula": "(C10H8O4)n",
+    "description": "Thermoplastic semi-crystalline polyester synthesized from terephthalic acid and ethylene glycol. Extensively used in packaging, beverage bottles, and synthetic fibers.",
+    "properties": {
+      "molecular_weight_repeat_unit": "192.17 g/mol",
+      "glass_transition_temp_celsius": 67.0,
+      "melting_temp_celsius": 260.0,
+      "crystallinity_variants": ["Amorphous (1-5% crystalline)", "Post-consumer bottle (25-35% crystalline)", "Biaxially oriented film (30-45% crystalline)"],
+      "ester_bond_cleavage_susceptibility": "Moderate to high at amorphous domains; low at dense crystalline lamellae",
+      "environmental_persistence_years": "Hundreds of years in ambient landfills and marine ecosystems"
+    },
+    "supported_roles": ["substrate"],
+    "evidence_ids": ["ref_yoshida_2016", "ref_austin_2018", "ref_kawai_2019"]
+  },
+  {
+    "id": "comp_pef",
+    "name": "Poly(ethylene 2,5-furandicarboxylate) (PEF)",
+    "category": "Plastics",
+    "chemical_formula": "(C8H6O5)n",
+    "description": "Bio-based aromatic polyester synthesized from 2,5-furandicarboxylic acid and ethylene glycol. Potential sustainable alternative to petroleum-derived PET with higher gas barrier performance.",
+    "properties": {
+      "molecular_weight_repeat_unit": "182.13 g/mol",
+      "glass_transition_temp_celsius": 86.0,
+      "melting_temp_celsius": 211.0,
+      "ester_bond_cleavage_susceptibility": "Degradable by engineered PETase mutants (Austin et al. 2018)"
+    },
+    "supported_roles": ["substrate"],
+    "evidence_ids": ["ref_austin_2018"]
+  },
+  {
+    "id": "comp_pla",
+    "name": "Poly(lactic acid) (PLA)",
+    "category": "Plastics",
+    "chemical_formula": "(C3H4O2)n",
+    "description": "Aliphatic bio-polyester derived from fermented plant starch. Biodegradable under industrial composting conditions (elevated temperature >58°C).",
+    "properties": {
+      "molecular_weight_repeat_unit": "72.06 g/mol",
+      "glass_transition_temp_celsius": 58.0,
+      "melting_temp_celsius": 175.0,
+      "ester_bond_cleavage_susceptibility": "Degradable by serine proteases (Proteinase K) and lipases, limited PETase affinity"
+    },
+    "supported_roles": ["substrate"],
+    "evidence_ids": ["ref_kawai_2019"]
+  },
+  {
+    "id": "comp_ispetase",
+    "name": "Ideonella sakaiensis PETase (IsPETase)",
+    "category": "Enzymes",
+    "ec_number": "3.1.1.101",
+    "description": "Wild-type alpha/beta-hydrolase fold esterase secreted by Ideonella sakaiensis 201-F6. Specifically cleaves ester bonds in amorphous poly(ethylene terephthalate).",
+    "properties": {
+      "catalytic_triad": "Ser160 - Asp206 - His237",
+      "optimal_temperature_celsius": 30.0,
+      "viable_temperature_min": 20.0,
+      "viable_temperature_max": 42.0,
+      "thermal_denaturation_onset_celsius": 45.0,
+      "optimal_ph": 7.0,
+      "viable_ph_min": 6.0,
+      "viable_ph_max": 9.0,
+      "substrate_preference": "Low-crystallinity PET > PEF",
+      "major_primary_product": "MHET (Mono-2-hydroxyethyl terephthalate)",
+      "product_inhibition": "Inhibited by accumulation of MHET and BHET"
+    },
+    "supported_roles": ["catalyst"],
+    "evidence_ids": ["ref_yoshida_2016", "ref_austin_2018", "ref_taniguchi_2019"]
+  },
+  {
+    "id": "comp_fast_petase",
+    "name": "FAST-PETase (Machine Learning Engineered)",
+    "category": "Enzymes",
+    "ec_number": "3.1.1.101 (engineered)",
+    "description": "Functional, Active, Stable, and Tolerant PETase developed through structure-based ML (MutCompute). Incorporates 5 point mutations (N233K/R224Q/S121E/D186H/R280A).",
+    "properties": {
+      "catalytic_triad": "Ser160 - Asp206 - His237",
+      "optimal_temperature_celsius": 50.0,
+      "viable_temperature_min": 30.0,
+      "viable_temperature_max": 55.0,
+      "thermal_denaturation_onset_celsius": 57.0,
+      "optimal_ph": 8.0,
+      "viable_ph_min": 6.5,
+      "viable_ph_max": 9.5,
+      "substrate_preference": "Post-consumer PET bottles, thermoformed trays, polyester fibers",
+      "major_primary_product": "MHET and TPA",
+      "thermostability_gain": "+8.8°C melting point elevation vs wild-type"
+    },
+    "supported_roles": ["catalyst"],
+    "evidence_ids": ["ref_lu_2022"]
+  },
+  {
+    "id": "comp_lcc_iccg",
+    "name": "LCC-ICCG Cutinase (Thermostabilized)",
+    "category": "Enzymes",
+    "ec_number": "3.1.1.74 (engineered)",
+    "description": "Engineered leaf-branch compost cutinase variant (F243I/D238C/S283C/Y127G) featuring an engineered disulfide bond for elevated operating temperatures.",
+    "properties": {
+      "catalytic_triad": "Ser165 - Asp210 - His242",
+      "optimal_temperature_celsius": 72.0,
+      "viable_temperature_min": 55.0,
+      "viable_temperature_max": 75.0,
+      "thermal_denaturation_onset_celsius": 80.0,
+      "optimal_ph": 8.0,
+      "viable_ph_min": 7.0,
+      "viable_ph_max": 9.0,
+      "substrate_preference": "Post-consumer micronized amorphous PET",
+      "major_primary_product": "Terephthalic Acid (TPA) and Ethylene Glycol (EG)",
+      "target_regime": "Near PET glass transition temperature (Tg ~67-75°C)"
+    },
+    "supported_roles": ["catalyst"],
+    "evidence_ids": ["ref_tournier_2020", "ref_kawai_2019"]
+  },
+  {
+    "id": "comp_mhetase",
+    "name": "Ideonella sakaiensis MHETase",
+    "category": "Enzymes",
+    "ec_number": "3.1.1.102",
+    "description": "Periplasmic or cell-associated esterase that specifically hydrolyzes mono-(2-hydroxyethyl) terephthalate (MHET) into monomeric terephthalic acid and ethylene glycol.",
+    "properties": {
+      "catalytic_triad": "Ser225 - Asp492 - His528",
+      "optimal_temperature_celsius": 30.0,
+      "viable_temperature_min": 20.0,
+      "viable_temperature_max": 40.0,
+      "optimal_ph": 7.5,
+      "viable_ph_min": 6.5,
+      "viable_ph_max": 8.5,
+      "substrate_preference": "MHET (no detectable activity on polymeric PET)",
+      "synergistic_role": "Relieves MHET accumulation inhibition on PETase"
+    },
+    "supported_roles": ["catalyst", "cofactor"],
+    "evidence_ids": ["ref_yoshida_2016", "ref_palm_2019"]
+  },
+  {
+    "id": "comp_ideonella",
+    "name": "Ideonella sakaiensis 201-F6",
+    "category": "Microorganisms",
+    "description": "Gram-negative, aerobic, rod-shaped betaproteobacterium isolated from sediment samples near a plastic recycling facility in Sakai, Japan.",
+    "properties": {
+      "growth_temperature_optimal_celsius": 30.0,
+      "growth_temperature_range": "15.0 - 37.0 °C",
+      "growth_ph_optimal": 7.0,
+      "growth_ph_range": "6.0 - 8.5",
+      "respiration": "Obligate aerobic",
+      "secretome": "Secretes IsPETase extracellularly; possesses MHETase and downstream TPA assimilation pathways",
+      "catabolism": "Converts TPA to protocatechuic acid via PCA 4,5-cleavage pathway"
+    },
+    "supported_roles": ["host_organism"],
+    "evidence_ids": ["ref_yoshida_2016", "ref_taniguchi_2019"]
+  },
+  {
+    "id": "comp_ecoli_exp",
+    "name": "Escherichia coli BL21(DE3) Expression Host",
+    "category": "Microorganisms",
+    "description": "Standard recombinant bacterial production chassis widely used for high-yield heterologous expression and secretion of recombinant PETases.",
+    "properties": {
+      "growth_temperature_optimal_celsius": 37.0,
+      "expression_temperature_optimal_celsius": "16.0 - 25.0 °C (low temp prevents inclusion body aggregation)",
+      "growth_ph_optimal": 7.0,
+      "respiration": "Facultative anaerobic (aerobic required for high-density culture)",
+      "chassis_notes": "Requires cell lysis or signal peptide targeting for enzyme harvest"
+    },
+    "supported_roles": ["host_organism"],
+    "evidence_ids": ["ref_austin_2018", "ref_lu_2022"]
+  },
+  {
+    "id": "comp_buffer_phosphate",
+    "name": "Sodium Phosphate Buffer (50 mM, pH 7.0)",
+    "category": "Chemicals and Cofactors",
+    "chemical_formula": "Na2HPO4 / NaH2PO4",
+    "description": "Standard biological buffer maintaining neutral pH during initial hydrolytic cleavage. Counters early local proton release from carboxylic acid generation.",
+    "properties": {
+      "buffering_range": "pH 5.8 - 8.0",
+      "osmolarity": "50 mM ionic strength",
+      "role": "Stabilizes active-site ionization states of mesophilic hydrolases"
+    },
+    "supported_roles": ["buffer", "cofactor"],
+    "evidence_ids": ["ref_yoshida_2016", "ref_austin_2018"]
+  },
+  {
+    "id": "comp_buffer_tris",
+    "name": "Tris-HCl Buffer (50 mM, pH 8.0)",
+    "category": "Chemicals and Cofactors",
+    "chemical_formula": "C4H11NO3 · HCl",
+    "description": "Amine-based buffer widely used for alkaline-active enzymes, cutinases, and MHETase characterization.",
+    "properties": {
+      "buffering_range": "pH 7.0 - 9.0",
+      "temperature_coefficient": "pH shifts ~0.03 pH units per °C increase",
+      "role": "Alkaline buffer suitable for FAST-PETase and LCC-ICCG assays"
+    },
+    "supported_roles": ["buffer", "cofactor"],
+    "evidence_ids": ["ref_tournier_2020", "ref_palm_2019"]
+  },
+  {
+    "id": "comp_cacl2",
+    "name": "Calcium Chloride (CaCl2, 1-10 mM)",
+    "category": "Chemicals and Cofactors",
+    "chemical_formula": "CaCl2",
+    "description": "Divalent cation cofactor known to stabilize loop regions and structural calcium-binding motifs in certain cutinases and thermophilic esterases.",
+    "properties": {
+      "effect": "Enhances thermal rigidity of cutinases; minimizes kinetic thermal inactivation at >60°C",
+      "concentration_optimal": "1.0 - 10.0 mM"
+    },
+    "supported_roles": ["cofactor"],
+    "evidence_ids": ["ref_tournier_2020"]
+  },
+  {
+    "id": "comp_naoh_titrant",
+    "name": "Sodium Hydroxide Neutralizing Titrant (1 M NaOH)",
+    "category": "Chemicals and Cofactors",
+    "chemical_formula": "NaOH",
+    "description": "Automated base titrant required in high-conversion bioreactor digests to neutralize terephthalic acid and MHET protons and maintain target pH.",
+    "properties": {
+      "criticality": "Essential in continuous or batch depolymerization >10% conversion to avoid self-limiting acidification and enzyme inactivation"
+    },
+    "supported_roles": ["buffer"],
+    "evidence_ids": ["ref_tournier_2020"]
+  }
+]
