@@ -91,11 +91,11 @@ export const PathwayFlow: React.FC<PathwayFlowProps> = ({
         data: {
           label: (
             <div className="p-3.5 text-left">
-              <div className="text-[10px] font-medium uppercase tracking-wider text-[#7461CE]">Recovered Monomers</div>
+              <div className="text-[10px] font-medium uppercase tracking-wider text-[#7461CE]">Potential Monomer Products</div>
               <div className="text-xs font-semibold text-[#24242B] mt-0.5">TPA + Ethylene Glycol</div>
               <div className="text-[11px] text-[#777780] font-mono mt-0.5">C8H6O4 + C2H6O2</div>
               <div className="mt-2 text-[10px] text-[#7461CE] bg-[#EAE5FA] px-2 py-0.5 rounded border border-[#D5CBF7] font-medium">
-                Virgin-Grade Closed-Loop Yield
+                Potential Monomer Recovery Pathway
               </div>
             </div>
           ),
@@ -232,11 +232,11 @@ export const PathwayFlow: React.FC<PathwayFlowProps> = ({
           data: {
             label: (
               <div className="p-3.5 text-left">
-                <div className="text-[10px] font-medium uppercase tracking-wider text-[#2D8A6E]">Final Monomers</div>
+                <div className="text-[10px] font-medium uppercase tracking-wider text-[#2D8A6E]">Hydrolysis Products</div>
                 <div className="text-xs font-semibold text-[#24242B] mt-0.5">TPA + Ethylene Glycol</div>
-                <div className="text-[11px] text-[#777780] font-mono mt-0.5">100% Cleaved Monomers</div>
+                <div className="text-[11px] text-[#777780] font-mono mt-0.5">C8H6O4 + C2H6O2</div>
                 <div className="mt-2 text-[10px] text-[#2D8A6E] bg-[#E8F6F1] px-2 py-0.5 rounded border border-[#C6E8DC] font-medium">
-                  Circular Economy Monomers
+                  MHET Conversion Pathway
                 </div>
               </div>
             ),

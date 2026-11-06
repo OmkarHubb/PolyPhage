@@ -57,11 +57,26 @@ class EnvironmentalImplication(BaseModel):
     recommendation: str
     severity_or_benefit: str  # High Benefit, Moderate Benefit, Manageable Risk, Critical Precaution
 
+class ComponentScoreEntry(BaseModel):
+    component_id: str
+    name: str
+    category: str
+    heuristic_score: int
+    basis: str  # Short explanation of what drove this component's score
+
 class ScientificAssessmentResult(BaseModel):
     experiment_id: str
     timestamp: str
     overall_status: str  # viable, suboptimal, inactivated, incompatible
-    overall_score: int = Field(ge=0, le=100, description="Scientific viability index based on environmental tolerance rules")
+    overall_score: int = Field(ge=0, le=100, description="Rule-based compatibility index derived from literature-sourced tolerance thresholds")
+    score_methodology: str = Field(
+        default="",
+        description="Explanation of score derivation. Not an experimentally validated degradation yield or probability."
+    )
+    score_breakdown: List[ComponentScoreEntry] = Field(
+        default_factory=list,
+        description="Per-component heuristic scores contributing to the overall compatibility index."
+    )
     executive_summary: str
     component_assessments: List[ComponentAssessment]
     interactions: List[InteractionAssessment]

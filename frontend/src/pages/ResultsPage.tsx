@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Activity,
   Sparkles,
@@ -9,6 +9,9 @@ import {
   ShieldAlert,
   Play,
   ArrowRight,
+  Info,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import {
   ScientificAssessmentResult,
@@ -35,6 +38,7 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
   onNavigateToEvidence,
   onRunAssessment,
 }) => {
+  const [showScoreBreakdown, setShowScoreBreakdown] = useState(false);
   if (!assessment) {
     return (
       <div className="p-16 text-center max-w-xl mx-auto space-y-4">
@@ -83,9 +87,20 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            <div className={`px-4 py-2.5 rounded-xl border text-center ${scoreBadgeStyle}`}>
-              <div className="text-2xl font-bold font-mono">{assessment.overall_score}</div>
-              <div className="text-[9px] uppercase font-bold tracking-wider">Viability Score</div>
+            <div className="space-y-1">
+              <div className={`px-4 py-2.5 rounded-xl border text-center ${scoreBadgeStyle}`}>
+                <div className="text-2xl font-bold font-mono">{assessment.overall_score}</div>
+                <div className="text-[9px] uppercase font-bold tracking-wider">Compatibility Index</div>
+              </div>
+              {/* Score transparency */}
+              <button
+                onClick={() => setShowScoreBreakdown(v => !v)}
+                className="w-full flex items-center justify-center gap-1 text-[10px] text-[#777780] hover:text-[#24242B] transition-colors cursor-pointer"
+              >
+                <Info className="w-3 h-3" />
+                <span>How is this calculated?</span>
+                {showScoreBreakdown ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              </button>
             </div>
 
             <button
@@ -93,10 +108,51 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
               className="px-4 py-3 bg-[#9785E8] hover:bg-[#8673DC] text-white rounded-xl text-xs font-semibold flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
             >
               <Sparkles className="w-4 h-4" />
-              <span>Ask AI to Interpret →</span>
+              <span>Ask AI to Interpret &rarr;</span>
             </button>
           </div>
         </div>
+
+        {/* Score Breakdown Panel */}
+        {showScoreBreakdown && (
+          <div className="bg-[#FAF9FD] rounded-xl border border-[#EAE5FA] p-4 space-y-3">
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#7461CE] block">
+                Compatibility Index &mdash; Methodology
+              </span>
+              <p className="text-[11px] text-[#777780] leading-relaxed">
+                {assessment.score_methodology ||
+                  'Rule-based compatibility index (0\u2013100), calculated from individual component heuristic scores. It is not an experimentally validated degradation yield or probability.'}
+              </p>
+            </div>
+            {assessment.score_breakdown && assessment.score_breakdown.length > 0 && (
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#A0A0A8] block">
+                  Component Score Contributions
+                </span>
+                {assessment.score_breakdown.map((entry) => (
+                  <div key={entry.component_id} className="flex items-center justify-between gap-3 bg-white rounded-lg px-3 py-2 border border-[#E7E7EB] text-xs">
+                    <div className="min-w-0">
+                      <span className="font-semibold text-[#24242B] truncate block">{entry.name}</span>
+                      <span className="text-[10px] text-[#777780] leading-tight block">{entry.basis}</span>
+                    </div>
+                    <span className={`font-mono font-bold shrink-0 px-2 py-0.5 rounded ${
+                      entry.heuristic_score >= 80 ? 'text-[#2D8A6E] bg-[#E8F6F1]' :
+                      entry.heuristic_score >= 50 ? 'text-[#B47820] bg-[#FEF6EB]' :
+                      'text-[#C44141] bg-[#FCEEEE]'
+                    }`}>{entry.heuristic_score}</span>
+                  </div>
+                ))}
+                <p className="text-[10px] text-[#A0A0A8] pt-1">
+                  Overall index = unweighted arithmetic mean of above scores
+                  {assessment.component_assessments.some(ca => ca.viability_status === 'denatured_or_lethal') &&
+                    ' (capped at 30 due to denatured component)'}
+                  .
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Executive Summary */}
         <div className="space-y-1.5">
@@ -115,7 +171,7 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
           <div className="flex items-center gap-2">
             <Layers className="w-4 h-4 text-[#9785E8]" />
             <h2 className="text-sm font-bold text-[#24242B]">
-              Enzymatic Cleavage Pathway & Reaction Flux
+              Enzymatic Cleavage Pathway &amp; Intermediate Products
             </h2>
           </div>
           <span className="text-[11px] text-[#777780] font-medium">

@@ -148,11 +148,21 @@ export interface LiteratureBenchmark {
   major_products_detected: string;
 }
 
+export interface ComponentScoreEntry {
+  component_id: string;
+  name: string;
+  category: string;
+  heuristic_score: number;
+  basis: string;
+}
+
 export interface ScientificAssessmentResult {
   experiment_id: string;
   timestamp: string;
   overall_status: 'viable' | 'suboptimal' | 'inactivated' | 'incompatible';
   overall_score: number;
+  score_methodology?: string;
+  score_breakdown?: ComponentScoreEntry[];
   executive_summary: string;
   component_assessments: ComponentAssessment[];
   interactions: InteractionAssessment[];

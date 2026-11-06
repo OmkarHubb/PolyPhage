@@ -4,6 +4,7 @@ from app.models.experiment import ExperimentConfig, OxygenAvailability
 from app.models.assessment import (
     ScientificAssessmentResult,
     ComponentAssessment,
+    ComponentScoreEntry,
     InteractionAssessment,
     PathwayFinding,
     ProductFinding,
@@ -41,6 +42,7 @@ class ScientificAssessmentEngine:
         # 2. Evaluate individual components under environmental conditions
         component_assessments: List[ComponentAssessment] = []
         viability_scores: List[int] = []
+        score_breakdown_entries: List[ComponentScoreEntry] = []
         collected_evidence_ids: set = set()
 
         for sc in selected_comps:
@@ -51,7 +53,7 @@ class ScientificAssessmentEngine:
             for eid in detail.get("evidence_ids", []):
                 collected_evidence_ids.add(eid)
 
-            status, score, temp_note, ph_note, general_notes = self._evaluate_component_viability(
+            status, score, temp_note, ph_note, general_notes, score_basis = self._evaluate_component_viability(
                 detail, sc.role.value, env
             )
             viability_scores.append(score)
@@ -65,6 +67,15 @@ class ScientificAssessmentEngine:
                     temperature_assessment=temp_note,
                     ph_assessment=ph_note,
                     notes=general_notes,
+                )
+            )
+            score_breakdown_entries.append(
+                ComponentScoreEntry(
+                    component_id=detail["id"],
+                    name=detail["name"],
+                    category=detail["category"],
+                    heuristic_score=score,
+                    basis=score_basis,
                 )
             )
 
@@ -90,7 +101,13 @@ class ScientificAssessmentEngine:
             overall_score = 0
             overall_status = "incompatible"
         else:
-            # Weighted overall score
+            # Rule-based compatibility index: unweighted arithmetic mean of per-component scores.
+            # Plastic/chemical components score 90 (baseline). Enzyme scores derive from published
+            # tolerance thresholds (optimal: 95, viable: 80, cold-stressed: 50, heat-stressed: 45,
+            # denatured: 10). Microorganism scores: 90 optimal, 65 non-ideal, 15 lethal.
+            # pH stress subtracts 35 points from enzyme score (floor 15).
+            # This is a heuristic rule-based index, NOT an experimentally validated degradation
+            # yield or probability.
             overall_score = int(sum(viability_scores) / len(viability_scores))
             if any(ca.viability_status == ViabilityStatus.DENATURED_OR_LETHAL for ca in component_assessments):
                 overall_status = "inactivated"
@@ -101,6 +118,17 @@ class ScientificAssessmentEngine:
                 overall_status = "viable"
             else:
                 overall_status = "suboptimal"
+
+        score_methodology = (
+            "Rule-based compatibility index (0–100). "
+            "Score is the unweighted arithmetic mean of per-component sub-scores derived from "
+            "published thermodynamic tolerance thresholds: enzyme near-optimal window (95), "
+            "viable range (80), cold-stressed (50), heat-stressed (45), denatured (10); "
+            "pH stress subtracts up to 35 points. Plastic/chemical components contribute a "
+            "baseline score of 90. Denaturation of any component caps the index at 30. "
+            "This index is a heuristic assessment tool, not an experimentally validated "
+            "degradation yield, conversion percentage, or statistical probability."
+        )
 
         # 7. Executive summary
         executive_summary = self._generate_executive_summary(
@@ -132,6 +160,8 @@ class ScientificAssessmentEngine:
             timestamp=timestamp,
             overall_status=overall_status,
             overall_score=overall_score,
+            score_methodology=score_methodology,
+            score_breakdown=score_breakdown_entries,
             executive_summary=executive_summary,
             component_assessments=component_assessments,
             interactions=interactions,
@@ -146,7 +176,8 @@ class ScientificAssessmentEngine:
 
     def _evaluate_component_viability(
         self, comp: Dict[str, Any], role: str, env
-    ) -> Tuple[ViabilityStatus, int, str, str, List[str]]:
+    ) -> Tuple[ViabilityStatus, int, str, str, List[str], str]:
+        """Returns: status, score, temp_note, ph_note, notes, score_basis"""
         props = comp.get("properties", {})
         cid = comp["id"]
         category = comp["category"]
@@ -155,6 +186,7 @@ class ScientificAssessmentEngine:
         ph = env.ph
         o2 = env.oxygen
         notes = []
+        score_basis = ""
 
         # Default neutral
         status = ViabilityStatus.OPTIMAL
@@ -176,21 +208,26 @@ class ScientificAssessmentEngine:
                 status = ViabilityStatus.DENATURED_OR_LETHAL
                 score = 10
                 temp_note = f"Thermal denaturation: Reaction temperature ({temp:.1f}°C) exceeds denaturation threshold ({t_denat:.1f}°C). Irreversible active-site inactivation occurs."
+                score_basis = f"Score 10: temperature {temp:.1f}°C ≥ denaturation onset {t_denat:.1f}°C (denatured)"
                 notes.append("Enzyme undergoes rapid tertiary structure unfolding.")
             elif temp > t_max:
                 status = ViabilityStatus.SUBOPTIMAL
                 score = 45
                 temp_note = f"Elevated thermal stress: Reaction temperature ({temp:.1f}°C) exceeds maximum viable boundary ({t_max:.1f}°C). Kinetic half-life significantly reduced."
+                score_basis = f"Score 45: temperature {temp:.1f}°C above viable max {t_max:.1f}°C (heat-stressed)"
             elif temp < t_min:
                 status = ViabilityStatus.SUBOPTIMAL
                 score = 50
                 temp_note = f"Low temperature inhibition: Temperature ({temp:.1f}°C) is below minimum kinetic range ({t_min:.1f}°C). Catalytic velocity is substantially depressed."
+                score_basis = f"Score 50: temperature {temp:.1f}°C below viable min {t_min:.1f}°C (cold-stressed)"
             elif abs(temp - opt_temp) <= 3.0:
                 temp_note = f"Near-optimal temperature: {temp:.1f}°C is within optimal catalytic window (~{opt_temp:.1f}°C)."
                 score = 95
+                score_basis = f"Score 95: temperature {temp:.1f}°C within ±3°C of optimal {opt_temp:.1f}°C"
             else:
                 temp_note = f"Viable temperature: {temp:.1f}°C is within tolerable operating boundary ({t_min:.1f} - {t_max:.1f}°C)."
                 score = 80
+                score_basis = f"Score 80: temperature {temp:.1f}°C viable but off-peak (optimal {opt_temp:.1f}°C)"
 
             # pH evaluation
             if ph < ph_min or ph > ph_max:
@@ -198,13 +235,14 @@ class ScientificAssessmentEngine:
                     status = ViabilityStatus.SUBOPTIMAL
                 score = max(15, score - 35)
                 ph_note = f"pH Stress: pH {ph:.1f} falls outside functional catalytic limits ({ph_min:.1f} - {ph_max:.1f}), disrupting catalytic triad ionization."
+                score_basis += f"; pH {ph:.1f} outside [{ph_min:.1f}–{ph_max:.1f}] → −35 pts (floor 15)"
             elif abs(ph - opt_ph) <= 0.4:
                 ph_note = f"Optimal pH: {ph:.1f} aligns with the enzyme's reported isoelectric and catalytic optimum (~{opt_ph:.1f})."
             else:
                 ph_note = f"Acceptable pH: {ph:.1f} within operational tolerance ({ph_min:.1f} - {ph_max:.1f})."
 
             if cid == "comp_lcc_iccg" and temp < 60.0:
-                notes.append("LCC operates most effectively near the PET glass transition temperature (Tg ~67°C). Low temperatures yield slow depolymerization.")
+                notes.append("LCC operates most effectively near the PET glass transition temperature (Tg ~67°C). Lower temperatures reduce chain mobility in amorphous regions, which literature suggests correlates with slower enzymatic surface access — though direct causation and quantitative rate effects depend on additional substrate-specific factors.")
 
         elif category == "Microorganisms":
             opt_temp = props.get("growth_temperature_optimal_celsius", 30.0)
@@ -212,37 +250,43 @@ class ScientificAssessmentEngine:
                 status = ViabilityStatus.DENATURED_OR_LETHAL
                 score = 15
                 temp_note = f"Lethal temperature: Host bacterium cannot survive sustained incubation at {temp:.1f}°C."
+                score_basis = f"Score 15: temperature {temp:.1f}°C is lethal for this organism (>40°C)"
             elif abs(temp - opt_temp) <= 3.0:
                 temp_note = f"Optimal growth temperature: {temp:.1f}°C supports active cell proliferation and protein secretion."
                 score = 90
+                score_basis = f"Score 90: temperature {temp:.1f}°C within ±3°C of optimal {opt_temp:.1f}°C"
             else:
                 status = ViabilityStatus.SUBOPTIMAL
                 temp_note = f"Non-ideal growth temperature: {temp:.1f}°C diverges from optimal {opt_temp:.1f}°C."
                 score = 65
+                score_basis = f"Score 65: temperature {temp:.1f}°C viable but off-optimal {opt_temp:.1f}°C"
 
             ph_note = f"Assessed at pH {ph:.1f}. Bacterial cell viability supported between pH 6.0 and 8.0."
             if o2 == OxygenAvailability.ANAEROBIC and cid == "comp_ideonella":
                 status = ViabilityStatus.DENATURED_OR_LETHAL
                 score = 10
+                score_basis += "; obligate aerobe under anaerobic conditions → score 10"
                 notes.append("Ideonella sakaiensis is an obligate aerobe; anaerobic conditions halt respiration and metabolic synthesis.")
 
         elif category == "Plastics":
             tg = props.get("glass_transition_temp_celsius", 67.0)
             temp_diff = tg - temp
             if temp >= tg:
-                temp_note = f"Operating at/above glass transition temperature (Tg = {tg:.1f}°C). Polymer amorphous chains possess high flexibility, greatly increasing enzyme accessible surface area."
-                notes.append("Elevated chain flexibility promotes endo-cleavage.")
+                temp_note = f"Operating at or above the PET glass transition temperature (Tg = {tg:.1f}°C). Polymer amorphous chain mobility is elevated in this regime, which literature associates with improved enzyme surface accessibility — though conversion rate also depends on substrate crystallinity, particle size, and enzyme loading."
+                notes.append("Elevated chain mobility in amorphous domains may promote endo-cleavage (literature-supported association, not direct rate calculation).")
             else:
-                temp_note = f"Operating below polymer glass transition temperature ({temp:.1f}°C vs Tg {tg:.1f}°C; ΔT = -{temp_diff:.1f}°C). Polymer chains remain in glassy state; hydrolysis is restricted to surface amorphous domains."
-            ph_note = "Plastic substrate is chemically stable across broad pH range; non-hydrolyzed by dilute acid/base alone in this time frame."
+                temp_note = f"Operating below the polymer glass transition temperature ({temp:.1f}°C vs Tg {tg:.1f}°C; ΔT = -{temp_diff:.1f}°C). Polymer chains are in a glassy state; hydrolysis is restricted to accessible surface amorphous domains. Proximity to Tg is associated in published literature with higher enzyme accessibility, but Tg alone does not determine reaction rate."
+            ph_note = "Plastic substrate is chemically stable across broad pH range; not hydrolyzed by dilute acid/base alone under typical enzymatic assay timescales."
             score = 90
+            score_basis = "Score 90: plastic substrate baseline (chemically stable; enzymatic susceptibility assessed separately)"
 
         else:  # Chemicals and cofactors
             temp_note = f"Thermodynamically stable across assay temperature ({temp:.1f}°C)."
             ph_note = f"Buffer capacity maintains system near pH {ph:.1f}."
             score = 90
+            score_basis = "Score 90: chemical/cofactor baseline (chemically stable across assessed conditions)"
 
-        return status, score, temp_note, ph_note, notes
+        return status, score, temp_note, ph_note, notes, score_basis
 
     def _evaluate_interactions(
         self, selected_comps, comp_details, env
@@ -540,7 +584,7 @@ class ScientificAssessmentEngine:
                 EnvironmentalImplication(
                     category="Carbon Emission Abatement & Circular Economy",
                     finding="Biological depolymerization diverts post-consumer PET from municipal incineration and landfill accumulation.",
-                    recommendation="Monolithic conversion to pure TPA enables bottle-to-bottle closed-loop recycling, displacing virgin petroleum cracking (saving ~1.5 - 2.0 kg CO2-eq per kg recycled PET).",
+                    recommendation="Conversion to pure TPA monomers enables closed-loop recycling without petrochemical cracking. The magnitude of lifecycle CO2-equivalent savings depends on process energy inputs and is not calculable from biochemical parameters alone.",
                     severity_or_benefit="High Benefit",
                 )
             )

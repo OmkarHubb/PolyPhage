@@ -41,35 +41,35 @@ export const EnvironmentPage: React.FC<EnvironmentPageProps> = ({
   const hasIsPetase = selectedIds.has('comp_ispetase');
   const hasLcc = selectedIds.has('comp_lcc_iccg');
 
-  // Real-time thermodynamic warning conditions
+  // Real-time biochemical compatibility feedback
   let thermalAlert: { type: 'alert' | 'warn' | 'optimal'; message: string } | null = null;
   if (hasIsPetase) {
     if (env.temperature_celsius >= 45.0) {
       thermalAlert = {
         type: 'alert',
-        message: `Thermal Denaturation Imminent: IsPETase is heat-labile and unfolds rapidly above 45°C (Current: ${env.temperature_celsius}°C). The deterministic engine will evaluate the system as inactivated.`,
+        message: `Thermal Denaturation Imminent: IsPETase is heat-labile and unfolds rapidly above 45\u00b0C (Current: ${env.temperature_celsius}\u00b0C). The deterministic engine will evaluate the system as inactivated.`,
       };
     } else if (env.temperature_celsius > 38.0) {
       thermalAlert = {
         type: 'warn',
-        message: `Elevated Thermal Stress: Operating at ${env.temperature_celsius}°C approaches the IsPETase denaturation boundary (42-45°C). Catalytic half-life is significantly compromised.`,
+        message: `Elevated Thermal Stress: Operating at ${env.temperature_celsius}\u00b0C approaches the IsPETase denaturation boundary (42\u201345\u00b0C). Catalytic half-life is significantly compromised.`,
       };
     } else if (Math.abs(env.temperature_celsius - 30.0) <= 3.0) {
       thermalAlert = {
         type: 'optimal',
-        message: `Optimal Mesophilic Window: 30°C aligns with published maximum activity for wild-type Ideonella sakaiensis PETase (Yoshida et al. 2016).`,
+        message: `Near-Optimal Mesophilic Window: 30\u00b0C aligns with reported activity under cited assay conditions for wild-type Ideonella sakaiensis PETase (Yoshida et al. 2016, 50\u00a0mM phosphate buffer, amorphous PET film).`,
       };
     }
   } else if (hasLcc) {
     if (env.temperature_celsius < 60.0) {
       thermalAlert = {
         type: 'warn',
-        message: `Below Chain Mobility Threshold: Engineered LCC cutinase operates efficiently near the PET glass transition temperature (Tg ~67°C). Operating at ${env.temperature_celsius}°C yields drastically slower conversion.`,
+        message: `Below Recommended Regime: Engineered LCC cutinase is reported to perform best near the PET glass transition temperature (Tg\u00a0\u223c67\u00b0C). Operating at ${env.temperature_celsius}\u00b0C is associated in the literature with lower polymer chain mobility and reduced enzyme surface access \u2014 though Tg proximity does not directly determine enzymatic reaction rate.`,
       };
     } else if (Math.abs(env.temperature_celsius - 72.0) <= 3.0) {
       thermalAlert = {
         type: 'optimal',
-        message: `Optimal Thermophilic Regime: 72°C matches Tournier et al. (Nature 2020) target temperature for engineered LCC-ICCG.`,
+        message: `Near-Optimal Thermophilic Regime: 72\u00b0C matches reported activity under cited assay conditions in Tournier et al. (Nature 2020) for engineered LCC-ICCG.`,
       };
     }
   }
@@ -110,7 +110,7 @@ export const EnvironmentPage: React.FC<EnvironmentPageProps> = ({
             onClick={() => onNavigate('bench')}
             className="px-4 py-2 bg-white hover:bg-[#F7F7F8] text-[#24242B] text-xs font-semibold rounded-xl border border-[#E7E7EB] transition-colors cursor-pointer"
           >
-            ← Back to Bench
+            &larr; Back to Bench
           </button>
           <button
             onClick={onRunAssessment}
@@ -122,7 +122,7 @@ export const EnvironmentPage: React.FC<EnvironmentPageProps> = ({
         </div>
       </div>
 
-      {/* Restrained Thermodynamic Feedback Alert Banner */}
+      {/* Biochemical Compatibility Feedback Banner */}
       {thermalAlert && (
         <div
           className={`p-4 rounded-2xl border text-xs flex items-start gap-3 shadow-xs ${
@@ -142,18 +142,18 @@ export const EnvironmentPage: React.FC<EnvironmentPageProps> = ({
           )}
           <div className="space-y-0.5">
             <span className="font-bold uppercase tracking-wider text-[10px] block">
-              Thermodynamic Boundary Live Feedback
+              Biochemical Compatibility Feedback
             </span>
             <span className="leading-relaxed">{thermalAlert.message}</span>
           </div>
         </div>
       )}
 
-      {/* Literature Environmental Presets */}
+      {/* Literature-Based Reference Conditions */}
       <div className="bg-white rounded-2xl p-6 border border-[#E7E7EB] shadow-xs space-y-3">
         <div className="flex items-center gap-2 text-xs font-bold text-[#24242B]">
           <Sparkles className="w-4 h-4 text-[#9785E8]" />
-          <span>Validated Literature Presets</span>
+          <span>Literature-Based Reference Conditions</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <button
@@ -163,8 +163,8 @@ export const EnvironmentPage: React.FC<EnvironmentPageProps> = ({
             className="p-3.5 rounded-xl bg-[#FAF9FD] hover:bg-[#EAE5FA] border border-[#EAE5FA] text-left transition-colors cursor-pointer space-y-1"
           >
             <div className="text-xs font-bold text-[#7461CE]">Mesophilic Benchmark</div>
-            <div className="text-[11px] text-[#24242B] font-mono">30°C · pH 7.0 · 24h</div>
-            <div className="text-[10px] text-[#777780]">Yoshida et al. (Science 2016)</div>
+            <div className="text-[11px] text-[#24242B] font-mono">30&deg;C &middot; pH 7.0 &middot; 24h</div>
+            <div className="text-[10px] text-[#777780]">Yoshida et al. (Science 2016) &mdash; 50&thinsp;mM phosphate, amorphous PET film</div>
           </button>
 
           <button
@@ -174,8 +174,8 @@ export const EnvironmentPage: React.FC<EnvironmentPageProps> = ({
             className="p-3.5 rounded-xl bg-[#FAF9FD] hover:bg-[#EAE5FA] border border-[#EAE5FA] text-left transition-colors cursor-pointer space-y-1"
           >
             <div className="text-xs font-bold text-[#7461CE]">Thermophilic Tg Regime</div>
-            <div className="text-[11px] text-[#24242B] font-mono">72°C · pH 8.0 · 10h</div>
-            <div className="text-[10px] text-[#777780]">Tournier et al. (Nature 2020)</div>
+            <div className="text-[11px] text-[#24242B] font-mono">72&deg;C &middot; pH 8.0 &middot; 10h</div>
+            <div className="text-[10px] text-[#777780]">Tournier et al. (Nature 2020) &mdash; LCC-ICCG, micronized PET, NaOH titration</div>
           </button>
 
           <button
@@ -185,8 +185,8 @@ export const EnvironmentPage: React.FC<EnvironmentPageProps> = ({
             className="p-3.5 rounded-xl bg-[#FAF9FD] hover:bg-[#EAE5FA] border border-[#EAE5FA] text-left transition-colors cursor-pointer space-y-1"
           >
             <div className="text-xs font-bold text-[#7461CE]">FAST-PETase Regime</div>
-            <div className="text-[11px] text-[#24242B] font-mono">50°C · pH 8.0 · 48h</div>
-            <div className="text-[10px] text-[#777780]">Lu et al. (Nature 2022)</div>
+            <div className="text-[11px] text-[#24242B] font-mono">50&deg;C &middot; pH 8.0 &middot; 48h</div>
+            <div className="text-[10px] text-[#777780]">Lu et al. (Nature 2022) &mdash; FAST-PETase, post-consumer PET containers</div>
           </button>
 
           <button
@@ -196,8 +196,8 @@ export const EnvironmentPage: React.FC<EnvironmentPageProps> = ({
             className="p-3.5 rounded-xl bg-[#FCEEEE] hover:bg-[#F8E1E1] border border-[#F8C8C8] text-left transition-colors cursor-pointer space-y-1"
           >
             <div className="text-xs font-bold text-[#C44141]">Denaturation Stress Test</div>
-            <div className="text-[11px] text-[#24242B] font-mono">70°C with IsPETase</div>
-            <div className="text-[10px] text-[#C44141]">Tests enzyme failure rule</div>
+            <div className="text-[11px] text-[#24242B] font-mono">70&deg;C with IsPETase</div>
+            <div className="text-[10px] text-[#C44141]">Illustrative scenario &mdash; not a literature-derived operating condition</div>
           </button>
         </div>
       </div>
@@ -216,7 +216,7 @@ export const EnvironmentPage: React.FC<EnvironmentPageProps> = ({
             </div>
             <div className="flex items-center gap-1 font-mono text-base font-bold text-[#7461CE] bg-[#FAF9FD] px-3 py-1 rounded-xl border border-[#EAE5FA]">
               <span>{env.temperature_celsius.toFixed(1)}</span>
-              <span className="text-xs text-[#777780] font-normal">°C</span>
+              <span className="text-xs text-[#777780] font-normal">&deg;C</span>
             </div>
           </div>
 
@@ -231,15 +231,15 @@ export const EnvironmentPage: React.FC<EnvironmentPageProps> = ({
           />
 
           <div className="flex items-center justify-between text-[10px] font-mono text-[#777780]">
-            <span>4°C</span>
-            <span className="text-[#2D8A6E] font-semibold">30°C (IsPETase opt)</span>
-            <span className="text-[#7461CE] font-semibold">50°C (FAST-PETase)</span>
-            <span className="text-[#9785E8] font-semibold">72°C (LCC opt)</span>
-            <span>95°C</span>
+            <span>4&deg;C</span>
+            <span className="text-[#2D8A6E] font-semibold">30&deg;C (IsPETase opt)</span>
+            <span className="text-[#7461CE] font-semibold">50&deg;C (FAST-PETase)</span>
+            <span className="text-[#9785E8] font-semibold">72&deg;C (LCC opt)</span>
+            <span>95&deg;C</span>
           </div>
 
           <p className="text-[11px] text-[#777780] leading-relaxed">
-            Governs enzyme active-site turnover velocity and polymer chain accessibility near the PET glass transition temperature (Tg ~67°C).
+            Governs enzyme active-site turnover velocity. Polymer chain mobility in amorphous regions is associated in the literature with proximity to the PET glass transition temperature (Tg&thinsp;&asymp;&thinsp;67&deg;C), but Tg alone does not directly determine enzymatic degradation rate.
           </p>
         </div>
 
@@ -305,7 +305,7 @@ export const EnvironmentPage: React.FC<EnvironmentPageProps> = ({
           </div>
 
           <p className="text-[11px] text-[#777780] leading-relaxed">
-            Obligate aerobe bacterium (Ideonella sakaiensis) requires oxygen for respiratory growth. Cell-free enzyme depolymerization does not consume O2.
+            Obligate aerobe bacterium (Ideonella sakaiensis) requires oxygen for respiratory growth. Cell-free enzyme depolymerization does not consume O&#8322;.
           </p>
         </div>
 

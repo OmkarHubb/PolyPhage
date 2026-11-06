@@ -39,6 +39,18 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 }) => {
   const latestAssessment = recentExperiments[0]?.assessment;
 
+  // Derive active components for conditional pathway illustration
+  const selectedIds = new Set(currentConfig.selected_components.map(sc => sc.component_id));
+  const hasIsPetase = selectedIds.has('comp_ispetase');
+  const hasFastPetase = selectedIds.has('comp_fast_petase');
+  const hasLcc = selectedIds.has('comp_lcc_iccg');
+  const hasMhetase = selectedIds.has('comp_mhetase');
+  const anyPetase = hasIsPetase || hasFastPetase;
+
+  // Enzyme label shown in diagram
+  const enzymeLabel = hasLcc ? 'LCC-ICCG' : hasFastPetase ? 'FAST-PETase' : hasIsPetase ? 'IsPETase' : 'Hydrolase';
+  const enzymeTriad = hasLcc ? 'Ser165-Asp210-His242' : 'Ser160-Asp206-His237';
+
   return (
     <div className="p-8 max-w-[1500px] mx-auto space-y-6">
       {/* Three-Column Workstation Composition */}
@@ -132,17 +144,17 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 PolyPhage Virtual Biotechnology Station
               </h1>
               <p className="text-xs text-[#777780] leading-relaxed max-w-xl">
-                Model enzymatic polyester chain cleavage under verified thermodynamic boundaries, trace reaction flux to circular monomers, and interpret findings with grounded literature references.
+                Assess enzymatic polyester chain cleavage under verified biochemical compatibility conditions, trace degradation pathways to their expected intermediates, and interpret findings with grounded literature references.
               </p>
             </div>
 
-            {/* Scientific Molecular Cleavage Diagram (Clean SVG Illustration) */}
+            {/* Scientific Molecular Cleavage Diagram (component-aware) */}
             <div className="bg-[#FAF9FD] rounded-xl p-5 border border-[#EAE5FA] space-y-3">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold text-[#7461CE] uppercase tracking-wider text-[10px]">
                   Enzymatic Depolymerization Mechanism
                 </span>
-                <span className="text-[11px] text-[#777780] font-mono">Ser160 · Asp206 · His237 Triad</span>
+                <span className="text-[11px] text-[#777780] font-mono">{enzymeTriad} Triad</span>
               </div>
 
               {/* Vector Molecular Diagram */}
@@ -150,7 +162,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 <div className="flex items-center justify-between text-[11px] font-mono text-[#777780] px-1">
                   <span className="text-[#24242B] font-semibold">PET Ester Backbone</span>
                   <span className="text-[#9785E8] font-semibold">Active Site Nucleophilic Attack</span>
-                  <span className="text-[#72C7B0] font-semibold">Monomer Recovery</span>
+                  <span className="text-[#72C7B0] font-semibold">
+                    {hasMhetase && anyPetase ? 'TPA + EG (via MHETase)' : anyPetase ? 'MHET (primary)' : hasLcc ? 'TPA + EG (direct)' : 'Products'}
+                  </span>
                 </div>
 
                 {/* SVG Visual Scheme */}
@@ -168,33 +182,49 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                   <path d="M160 47 H210" stroke="#9785E8" strokeWidth="2" strokeDasharray="3 3" />
                   <polygon points="214,47 207,43 207,51" fill="#9785E8" />
 
-                  {/* Enzyme active cleft */}
+                  {/* Enzyme active cleft — dynamic label */}
                   <rect x="224" y="24" width="150" height="46" rx="10" fill="#EAE5FA" stroke="#D5CBF7" strokeWidth="1.5" />
                   <circle cx="250" cy="47" r="14" fill="#9785E8" fillOpacity="0.2" />
                   <text x="250" y="50" textAnchor="middle" fill="#7461CE" fontSize="9" fontWeight="700">Ser</text>
-                  <text x="310" y="43" textAnchor="middle" fill="#24242B" fontSize="10" fontWeight="600">IsPETase / LCC</text>
+                  <text x="310" y="43" textAnchor="middle" fill="#24242B" fontSize="10" fontWeight="600">{enzymeLabel}</text>
                   <text x="310" y="56" textAnchor="middle" fill="#7461CE" fontSize="8" fontFamily="monospace">Hydrolysis Cleft</text>
 
                   {/* Arrow 2 */}
                   <path d="M384 47 H434" stroke="#72C7B0" strokeWidth="2" />
                   <polygon points="438,47 431,43 431,51" fill="#72C7B0" />
 
-                  {/* Products */}
-                  <rect x="448" y="18" width="130" height="26" rx="6" fill="#E8F6F1" stroke="#C6E8DC" strokeWidth="1.5" />
-                  <text x="513" y="35" textAnchor="middle" fill="#2D8A6E" fontSize="9" fontWeight="600" fontFamily="monospace">
-                    TPA (C8H6O4)
-                  </text>
-
-                  <rect x="448" y="50" width="130" height="26" rx="6" fill="#F2F2F4" stroke="#E7E7EB" strokeWidth="1.5" />
-                  <text x="513" y="67" textAnchor="middle" fill="#24242B" fontSize="9" fontWeight="600" fontFamily="monospace">
-                    EG (C2H6O2) + MHET
-                  </text>
+                  {/* Products — IsPETase/FAST primary: MHET. LCC or + MHETase: TPA+EG */}
+                  {(anyPetase && !hasMhetase) ? (
+                    <>
+                      <rect x="448" y="22" width="130" height="24" rx="6" fill="#FEF6EB" stroke="#F6E1C4" strokeWidth="1.5" />
+                      <text x="513" y="38" textAnchor="middle" fill="#B47820" fontSize="9" fontWeight="600" fontFamily="monospace">
+                        MHET (C10H10O5)
+                      </text>
+                      <rect x="448" y="52" width="130" height="22" rx="6" fill="#F2F2F4" stroke="#E7E7EB" strokeWidth="1.5" />
+                      <text x="513" y="67" textAnchor="middle" fill="#777780" fontSize="8" fontFamily="monospace">
+                        minor: TPA, BHET
+                      </text>
+                    </>
+                  ) : (
+                    <>
+                      <rect x="448" y="18" width="130" height="26" rx="6" fill="#E8F6F1" stroke="#C6E8DC" strokeWidth="1.5" />
+                      <text x="513" y="35" textAnchor="middle" fill="#2D8A6E" fontSize="9" fontWeight="600" fontFamily="monospace">
+                        TPA (C8H6O4)
+                      </text>
+                      <rect x="448" y="50" width="130" height="26" rx="6" fill="#F2F2F4" stroke="#E7E7EB" strokeWidth="1.5" />
+                      <text x="513" y="67" textAnchor="middle" fill="#24242B" fontSize="9" fontWeight="600" fontFamily="monospace">
+                        EG (C2H6O2)
+                      </text>
+                    </>
+                  )}
                 </svg>
 
                 <div className="flex items-center justify-between text-[10px] text-[#777780] px-1">
                   <span>Amorphous domain adsorption</span>
                   <span className="text-[#7461CE] font-medium">Water-mediated acyl-enzyme intermediate</span>
-                  <span className="text-[#2D8A6E] font-medium">Soluble circular building blocks</span>
+                  <span className="text-[#2D8A6E] font-medium">
+                    {hasMhetase && anyPetase ? 'TPA + EG via cascade' : anyPetase ? 'MHET accumulates (no MHETase)' : 'TPA + EG direct'}
+                  </span>
                 </div>
               </div>
             </div>
