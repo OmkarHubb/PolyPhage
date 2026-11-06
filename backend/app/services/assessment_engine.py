@@ -5,6 +5,7 @@ from app.models.assessment import (
     ScientificAssessmentResult,
     ComponentAssessment,
     ComponentScoreEntry,
+    ScoreCalculationDetails,
     InteractionAssessment,
     PathwayFinding,
     ProductFinding,
@@ -100,34 +101,85 @@ class ScientificAssessmentEngine:
         if not viability_scores:
             overall_score = 0
             overall_status = "incompatible"
+            score_details = ScoreCalculationDetails(
+                raw_component_mean=0.0,
+                applied_cap=None,
+                override_reason="No components configured",
+                calculation_steps=["No components configured; index set to 0."]
+            )
         else:
-            # Rule-based compatibility index: unweighted arithmetic mean of per-component scores.
-            # Plastic/chemical components score 90 (baseline). Enzyme scores derive from published
-            # tolerance thresholds (optimal: 95, viable: 80, cold-stressed: 50, heat-stressed: 45,
-            # denatured: 10). Microorganism scores: 90 optimal, 65 non-ideal, 15 lethal.
-            # pH stress subtracts 35 points from enzyme score (floor 15).
-            # This is a heuristic rule-based index, NOT an experimentally validated degradation
-            # yield or probability.
-            overall_score = int(sum(viability_scores) / len(viability_scores))
-            if any(ca.viability_status == ViabilityStatus.DENATURED_OR_LETHAL for ca in component_assessments):
+            raw_mean = sum(viability_scores) / len(viability_scores)
+            overall_score = int(raw_mean)
+            applied_cap = None
+            override_reason = None
+            calculation_steps = []
+
+            # Step 1: Component evaluation summary
+            comp_score_strs = [f"{ca.name}: {s}" for ca, s in zip(component_assessments, viability_scores)]
+            calculation_steps.append(
+                f"Step 1 (Component Evaluation): Individual heuristic scores assigned based on literature tolerance thresholds: {', '.join(comp_score_strs)}."
+            )
+
+            # Step 2: Arithmetic mean
+            calculation_steps.append(
+                f"Step 2 (Arithmetic Mean): Raw unweighted component mean = sum({viability_scores}) / {len(viability_scores)} = {raw_mean:.1f} (integer: {overall_score})."
+            )
+
+            # Step 3: Check for terminal biocatalytic failures (thermal denaturation / lethal stress)
+            denatured_components = [ca.name for ca in component_assessments if ca.viability_status == ViabilityStatus.DENATURED_OR_LETHAL]
+            if denatured_components:
                 overall_status = "inactivated"
-                overall_score = min(overall_score, 30)
+                if overall_score > 30:
+                    applied_cap = 30
+                    overall_score = 30
+                    override_reason = (
+                        f"Terminal inactivation override: {', '.join(denatured_components)} suffered lethal/denaturing stress (score 10–15). "
+                        "Overall compatibility index is capped at 30 to reflect catalytic cessation regardless of substrate or buffer stability."
+                    )
+                    calculation_steps.append(f"Step 3 (Terminal Override Applied): {override_reason}")
+                else:
+                    calculation_steps.append(
+                        f"Step 3 (Terminal Status): {', '.join(denatured_components)} denatured; raw mean ({overall_score}) is already at or below the 30 ceiling."
+                    )
             elif any(ca.viability_status == ViabilityStatus.SUBOPTIMAL for ca in component_assessments):
                 overall_status = "suboptimal"
+                calculation_steps.append(
+                    "Step 3 (Suboptimal Check): No terminal denaturation; one or more components operate under suboptimal temperature or pH conditions."
+                )
             elif any(p.status == "active" for p in pathways):
                 overall_status = "viable"
+                calculation_steps.append(
+                    "Step 3 (Viability Check): All components operate within published viable windows and at least one catalytic pathway is active."
+                )
             else:
                 overall_status = "suboptimal"
+                calculation_steps.append(
+                    "Step 3 (Viability Check): Reaction conditions viable but catalytic pathway is inactive or rate-limited."
+                )
+
+            # Step 4: Final index
+            calculation_steps.append(
+                f"Step 4 (Final Compatibility Index): Overall index = {overall_score} / 100 (Status: {overall_status})."
+            )
+
+            score_details = ScoreCalculationDetails(
+                raw_component_mean=round(raw_mean, 1),
+                applied_cap=applied_cap,
+                override_reason=override_reason,
+                calculation_steps=calculation_steps
+            )
 
         score_methodology = (
-            "Rule-based compatibility index (0–100). "
-            "Score is the unweighted arithmetic mean of per-component sub-scores derived from "
-            "published thermodynamic tolerance thresholds: enzyme near-optimal window (95), "
-            "viable range (80), cold-stressed (50), heat-stressed (45), denatured (10); "
-            "pH stress subtracts up to 35 points. Plastic/chemical components contribute a "
-            "baseline score of 90. Denaturation of any component caps the index at 30. "
-            "This index is a heuristic assessment tool, not an experimentally validated "
-            "degradation yield, conversion percentage, or statistical probability."
+            "The compatibility index is computed in 4 deterministic steps: "
+            "1. Individual heuristic score evaluation per component based on published thermodynamic and biochemical tolerance thresholds "
+            "(optimal window: 90–95, viable range: 80, cold/heat stress: 45–50, pH stress: -35 pt deduction down to 15 floor, denatured/lethal: 10–15; "
+            "plastic substrate baseline: 90, buffer/chemical baseline: 90). "
+            "2. Unweighted arithmetic mean calculation of all component scores to establish the raw component mean. "
+            "3. Terminal viability verification: if any biocatalyst or microbial host suffers thermal denaturation or lethal stress (status 'denatured_or_lethal'), "
+            "the overall index is capped at a maximum of 30, overriding the raw arithmetic mean to reflect catalytic cessation. "
+            "4. Status classification: 'inactivated' (if capped at 30 due to denaturation), 'suboptimal' (if any component is suboptimal or off-peak), "
+            "or 'viable' (if all components operational and pathway active). "
+            "This index represents rule-based biochemical compatibility under configured conditions and is not an experimentally validated degradation yield, rate, or probability."
         )
 
         # 7. Executive summary
@@ -162,6 +214,7 @@ class ScientificAssessmentEngine:
             overall_score=overall_score,
             score_methodology=score_methodology,
             score_breakdown=score_breakdown_entries,
+            score_details=score_details,
             executive_summary=executive_summary,
             component_assessments=component_assessments,
             interactions=interactions,
@@ -427,7 +480,7 @@ class ScientificAssessmentEngine:
 
                     # Products generated
                     if p_status != "inactivated":
-                        # If MHETase is absent, MHET is the primary product
+                        # Primary cleavage intermediate products
                         if "comp_mhetase" not in cids:
                             products.append(
                                 ProductFinding(
@@ -435,9 +488,10 @@ class ScientificAssessmentEngine:
                                     name="Mono-(2-hydroxyethyl) terephthalate (MHET)",
                                     formula="C10H10O5",
                                     molar_mass="210.18 g/mol",
-                                    yield_classification="Primary major product",
+                                    reaction_stage="primary_cleavage_intermediate",
+                                    yield_classification="Primary cleavage intermediate (soluble)",
                                     solubility_and_phase="Aqueous soluble monomeric ester",
-                                    biological_and_environmental_impact="Non-toxic water-soluble metabolite; causes product inhibition on PETase if allowed to accumulate.",
+                                    biological_and_environmental_impact="Major soluble intermediate of mesophilic PETase cleavage on amorphous PET (Yoshida et al. 2016); accumulates and exerts feedback product inhibition without downstream MHETase.",
                                     evidence_id="ref_yoshida_2016",
                                 )
                             )
@@ -447,9 +501,10 @@ class ScientificAssessmentEngine:
                                     name="Bis(2-hydroxyethyl) terephthalate (BHET)",
                                     formula="C12H14O6",
                                     molar_mass="254.24 g/mol",
-                                    yield_classification="Trace byproduct",
+                                    reaction_stage="primary_cleavage_intermediate",
+                                    yield_classification="Trace cleavage intermediate",
                                     solubility_and_phase="Partially soluble",
-                                    biological_and_environmental_impact="Intermediate from dual chain-end cleavage.",
+                                    biological_and_environmental_impact="Trace soluble intermediate from dual-ester cleavage.",
                                     evidence_id="ref_austin_2018",
                                 )
                             )
@@ -459,9 +514,25 @@ class ScientificAssessmentEngine:
                                     name="Terephthalic Acid (TPA)",
                                     formula="C8H6O4",
                                     molar_mass="166.13 g/mol",
-                                    yield_classification="Minor direct product (without MHETase)",
+                                    reaction_stage="primary_cleavage_intermediate",
+                                    yield_classification="Minor direct cleavage product (incomplete recovery)",
                                     solubility_and_phase="Precipitates at pH < 4; soluble dianion at neutral/alkaline pH",
-                                    biological_and_environmental_impact="Key recycling chemical building block; acidifies solution.",
+                                    biological_and_environmental_impact="Minor direct cleavage product of IsPETase alone; complete monomer recovery is not achieved without downstream MHETase.",
+                                    evidence_id="ref_yoshida_2016",
+                                )
+                            )
+                        else:
+                            # In dual-enzyme cascade, MHET is transiently formed before secondary hydrolysis
+                            products.append(
+                                ProductFinding(
+                                    product_id="prod_mhet_transient",
+                                    name="Mono-(2-hydroxyethyl) terephthalate (MHET, transient)",
+                                    formula="C10H10O5",
+                                    molar_mass="210.18 g/mol",
+                                    reaction_stage="primary_cleavage_intermediate",
+                                    yield_classification="Transient cleavage intermediate (cleared by MHETase)",
+                                    solubility_and_phase="Aqueous soluble monomeric ester",
+                                    biological_and_environmental_impact="Transiently liberated by IsPETase primary cleavage and rapidly hydrolyzed by secondary MHETase, preventing feedback inhibition.",
                                     evidence_id="ref_yoshida_2016",
                                 )
                             )
@@ -491,16 +562,17 @@ class ScientificAssessmentEngine:
                     )
 
                     if m_status != "inactivated":
-                        # TPA and EG become major products
+                        # TPA and EG become secondary hydrolysis products
                         products.append(
                             ProductFinding(
                                 product_id="prod_tpa_cascade",
-                                name="Terephthalic Acid (TPA, Monomer Recovery)",
+                                name="Terephthalic Acid (TPA)",
                                 formula="C8H6O4",
                                 molar_mass="166.13 g/mol",
-                                yield_classification="Primary major product",
+                                reaction_stage="secondary_hydrolysis_product",
+                                yield_classification="Secondary hydrolysis monomer (TPA)",
                                 solubility_and_phase="Aqueous solution at pH 7-8",
-                                biological_and_environmental_impact="Circular monomer ready for purification and repolymerization into virgin PET.",
+                                biological_and_environmental_impact="Aromatic monomer recovered from secondary hydrolysis of MHET by MHETase; actual recovery depends on substrate crystallinity, particle geometry, and reaction time (not guaranteed complete yield).",
                                 evidence_id="ref_palm_2019",
                             )
                         )
@@ -510,9 +582,10 @@ class ScientificAssessmentEngine:
                                 name="Ethylene Glycol (EG)",
                                 formula="C2H6O2",
                                 molar_mass="62.07 g/mol",
-                                yield_classification="Primary major product",
+                                reaction_stage="secondary_hydrolysis_product",
+                                yield_classification="Secondary hydrolysis monomer (EG)",
                                 solubility_and_phase="Miscible liquid diol",
-                                biological_and_environmental_impact="Readily metabolized by environmental microbes or recycled in chemical synthesis.",
+                                biological_and_environmental_impact="Diol co-monomer liberated stoichiometrically alongside TPA.",
                                 evidence_id="ref_yoshida_2016",
                             )
                         )
@@ -551,9 +624,10 @@ class ScientificAssessmentEngine:
                                 name="Terephthalic Acid (TPA)",
                                 formula="C8H6O4",
                                 molar_mass="166.13 g/mol",
-                                yield_classification="Primary major product",
+                                reaction_stage="direct_cleavage_monomer",
+                                yield_classification="Direct thermophilic cleavage monomer (TPA)",
                                 solubility_and_phase="Disodium terephthalate in neutralized digest",
-                                biological_and_environmental_impact="Direct circular economy recycling feedstock [Tournier et al. 2020].",
+                                biological_and_environmental_impact="Direct aromatic monomer product from thermophilic cutinase cleavage near polymer Tg (Tournier et al. 2020 achieved 90% conversion under continuous automated NaOH titration with micronized amorphous PET; unbuffered or high-crystallinity specimens yield substantially lower conversion).",
                                 evidence_id="ref_tournier_2020",
                             )
                         )
@@ -563,9 +637,10 @@ class ScientificAssessmentEngine:
                                 name="Ethylene Glycol (EG)",
                                 formula="C2H6O2",
                                 molar_mass="62.07 g/mol",
-                                yield_classification="Primary major product",
+                                reaction_stage="direct_cleavage_monomer",
+                                yield_classification="Direct thermophilic cleavage monomer (EG)",
                                 solubility_and_phase="Soluble diol",
-                                biological_and_environmental_impact="Recoverable monomer.",
+                                biological_and_environmental_impact="Direct diol co-monomer liberated alongside TPA.",
                                 evidence_id="ref_tournier_2020",
                             )
                         )

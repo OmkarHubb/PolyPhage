@@ -115,40 +115,88 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
 
         {/* Score Breakdown Panel */}
         {showScoreBreakdown && (
-          <div className="bg-[#FAF9FD] rounded-xl border border-[#EAE5FA] p-4 space-y-3">
+          <div className="bg-[#FAF9FD] rounded-xl border border-[#EAE5FA] p-4 space-y-4">
             <div className="space-y-1">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#7461CE] block">
-                Compatibility Index &mdash; Methodology
+                Compatibility Index &mdash; Calculation Methodology
               </span>
               <p className="text-[11px] text-[#777780] leading-relaxed">
                 {assessment.score_methodology ||
                   'Rule-based compatibility index (0\u2013100), calculated from individual component heuristic scores. It is not an experimentally validated degradation yield or probability.'}
               </p>
             </div>
+
+            {/* Individual Component Scores */}
             {assessment.score_breakdown && assessment.score_breakdown.length > 0 && (
               <div className="space-y-1.5">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#A0A0A8] block">
-                  Component Score Contributions
+                  1. Component Heuristic Contributions
                 </span>
-                {assessment.score_breakdown.map((entry) => (
-                  <div key={entry.component_id} className="flex items-center justify-between gap-3 bg-white rounded-lg px-3 py-2 border border-[#E7E7EB] text-xs">
-                    <div className="min-w-0">
-                      <span className="font-semibold text-[#24242B] truncate block">{entry.name}</span>
-                      <span className="text-[10px] text-[#777780] leading-tight block">{entry.basis}</span>
+                <div className="space-y-1.5">
+                  {assessment.score_breakdown.map((entry) => (
+                    <div key={entry.component_id} className="flex items-center justify-between gap-3 bg-white rounded-lg px-3 py-2 border border-[#E7E7EB] text-xs">
+                      <div className="min-w-0">
+                        <span className="font-semibold text-[#24242B] truncate block">{entry.name}</span>
+                        <span className="text-[10px] text-[#777780] leading-tight block">{entry.basis}</span>
+                      </div>
+                      <span className={`font-mono font-bold shrink-0 px-2 py-0.5 rounded ${
+                        entry.heuristic_score >= 80 ? 'text-[#2D8A6E] bg-[#E8F6F1]' :
+                        entry.heuristic_score >= 50 ? 'text-[#B47820] bg-[#FEF6EB]' :
+                        'text-[#C44141] bg-[#FCEEEE]'
+                      }`}>{entry.heuristic_score}</span>
                     </div>
-                    <span className={`font-mono font-bold shrink-0 px-2 py-0.5 rounded ${
-                      entry.heuristic_score >= 80 ? 'text-[#2D8A6E] bg-[#E8F6F1]' :
-                      entry.heuristic_score >= 50 ? 'text-[#B47820] bg-[#FEF6EB]' :
-                      'text-[#C44141] bg-[#FCEEEE]'
-                    }`}>{entry.heuristic_score}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Detailed Trace: Raw Mean vs Cap/Override */}
+            {assessment.score_details && (
+              <div className="space-y-2 pt-1 border-t border-[#EAE5FA]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#A0A0A8] block">
+                  2. Aggregation &amp; System Overrides
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <div className="bg-white rounded-lg p-2.5 border border-[#E7E7EB]">
+                    <span className="text-[10px] text-[#777780] block font-medium">Raw Component Mean:</span>
+                    <span className="text-sm font-bold font-mono text-[#24242B]">
+                      {assessment.score_details.raw_component_mean} / 100
+                    </span>
+                    <span className="text-[10px] text-[#A0A0A8] block mt-0.5">Unweighted arithmetic average</span>
                   </div>
-                ))}
-                <p className="text-[10px] text-[#A0A0A8] pt-1">
-                  Overall index = unweighted arithmetic mean of above scores
-                  {assessment.component_assessments.some(ca => ca.viability_status === 'denatured_or_lethal') &&
-                    ' (capped at 30 due to denatured component)'}
-                  .
-                </p>
+                  <div className="bg-white rounded-lg p-2.5 border border-[#E7E7EB]">
+                    <span className="text-[10px] text-[#777780] block font-medium">Applied System Cap:</span>
+                    <span className={`text-sm font-bold font-mono ${
+                      assessment.score_details.applied_cap !== null && assessment.score_details.applied_cap !== undefined
+                        ? 'text-[#C44141]'
+                        : 'text-[#2D8A6E]'
+                    }`}>
+                      {assessment.score_details.applied_cap !== null && assessment.score_details.applied_cap !== undefined
+                        ? `Capped at ${assessment.score_details.applied_cap}`
+                        : 'None (no cap applied)'}
+                    </span>
+                    <span className="text-[10px] text-[#A0A0A8] block mt-0.5">
+                      {assessment.score_details.override_reason || 'Scores within tolerable limits'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Step-by-Step Calculation Trace */}
+                {assessment.score_details.calculation_steps.length > 0 && (
+                  <div className="bg-white rounded-lg p-3 border border-[#E7E7EB] space-y-1">
+                    <span className="text-[10px] font-bold text-[#7461CE] uppercase tracking-wider block">
+                      Deterministic Execution Trace:
+                    </span>
+                    <ul className="space-y-1 text-[11px] text-[#777780] font-mono leading-relaxed">
+                      {assessment.score_details.calculation_steps.map((step, sIdx) => (
+                        <li key={sIdx} className="flex items-start gap-1.5">
+                          <span className="text-[#9785E8] font-bold shrink-0">&bull;</span>
+                          <span>{step}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -297,21 +345,38 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
             <table className="w-full text-left text-xs">
               <thead className="bg-[#FAF9FD] border-b border-[#E7E7EB] text-[10px] font-bold uppercase tracking-wider text-[#777780]">
                 <tr>
-                  <th className="px-5 py-3">Product Name</th>
-                  <th className="px-5 py-3">Formula & Molar Mass</th>
-                  <th className="px-5 py-3">Yield Classification</th>
-                  <th className="px-5 py-3">Phase & Biological Fate</th>
+                  <th className="px-5 py-3">Product Name &amp; Stage</th>
+                  <th className="px-5 py-3">Formula &amp; Molar Mass</th>
+                  <th className="px-5 py-3">Classification &amp; Intermediate Role</th>
+                  <th className="px-5 py-3">Phase &amp; Biological Fate</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E7E7EB]">
                 {assessment.potential_products.map((p, idx) => (
                   <tr key={idx} className="hover:bg-[#FAFAFC] transition-colors">
-                    <td className="px-5 py-3.5 font-bold text-[#24242B]">{p.name}</td>
+                    <td className="px-5 py-3.5">
+                      <div className="font-bold text-[#24242B]">{p.name}</div>
+                      {p.reaction_stage && (
+                        <span className={`inline-block mt-0.5 text-[9px] px-2 py-0.5 rounded font-mono font-medium ${
+                          p.reaction_stage === 'primary_cleavage_intermediate'
+                            ? 'bg-[#FEF6EB] text-[#B47820] border border-[#F6E1C4]'
+                            : p.reaction_stage === 'secondary_hydrolysis_product'
+                            ? 'bg-[#E8F6F1] text-[#2D8A6E] border border-[#C6E8DC]'
+                            : 'bg-[#FAF9FD] text-[#7461CE] border border-[#EAE5FA]'
+                        }`}>
+                          {p.reaction_stage === 'primary_cleavage_intermediate'
+                            ? 'Primary Cleavage Intermediate'
+                            : p.reaction_stage === 'secondary_hydrolysis_product'
+                            ? 'Secondary Hydrolysis Product'
+                            : 'Direct Cleavage Monomer'}
+                        </span>
+                      )}
+                    </td>
                     <td className="px-5 py-3.5 font-mono text-[11px] text-[#7461CE] font-medium">
                       {p.formula} {p.molar_mass && `· ${p.molar_mass}`}
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-[#E8F6F1] text-[#2D8A6E] border border-[#C6E8DC]">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-[#F7F7F8] text-[#24242B] border border-[#E7E7EB]">
                         {p.yield_classification}
                       </span>
                     </td>

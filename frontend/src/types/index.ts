@@ -110,6 +110,7 @@ export interface ProductFinding {
   name: string;
   formula?: string;
   molar_mass?: string;
+  reaction_stage?: 'primary_cleavage_intermediate' | 'secondary_hydrolysis_product' | 'direct_cleavage_monomer' | 'byproduct';
   yield_classification: string;
   solubility_and_phase: string;
   biological_and_environmental_impact: string;
@@ -156,6 +157,13 @@ export interface ComponentScoreEntry {
   basis: string;
 }
 
+export interface ScoreCalculationDetails {
+  raw_component_mean: number;
+  applied_cap?: number | null;
+  override_reason?: string | null;
+  calculation_steps: string[];
+}
+
 export interface ScientificAssessmentResult {
   experiment_id: string;
   timestamp: string;
@@ -163,6 +171,7 @@ export interface ScientificAssessmentResult {
   overall_score: number;
   score_methodology?: string;
   score_breakdown?: ComponentScoreEntry[];
+  score_details?: ScoreCalculationDetails;
   executive_summary: string;
   component_assessments: ComponentAssessment[];
   interactions: InteractionAssessment[];

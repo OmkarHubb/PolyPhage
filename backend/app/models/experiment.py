@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import List, Optional
 from pydantic import BaseModel, Field
-from app.models.components import SelectedComponent
+from app.models.components import SelectedComponent, ComponentRole, ComponentCategory
 
 class OxygenAvailability(str, Enum):
     AEROBIC = "Aerobic"

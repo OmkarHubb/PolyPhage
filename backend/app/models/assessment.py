@@ -46,7 +46,11 @@ class ProductFinding(BaseModel):
     name: str
     formula: Optional[str] = None
     molar_mass: Optional[str] = None
-    yield_classification: str  # Primary major product, Intermediate metabolite, Trace byproduct, Unlikely
+    reaction_stage: Optional[str] = Field(
+        default=None,
+        description="Reaction stage: 'primary_cleavage_intermediate', 'secondary_hydrolysis_product', 'direct_cleavage_monomer', or 'byproduct'"
+    )
+    yield_classification: str  # Primary cleavage intermediate, Secondary hydrolysis product, Direct cleavage monomer, Trace intermediate, etc.
     solubility_and_phase: str
     biological_and_environmental_impact: str
     evidence_id: Optional[str] = None
@@ -64,6 +68,12 @@ class ComponentScoreEntry(BaseModel):
     heuristic_score: int
     basis: str  # Short explanation of what drove this component's score
 
+class ScoreCalculationDetails(BaseModel):
+    raw_component_mean: float = Field(description="Arithmetic mean of individual component heuristic scores before system caps")
+    applied_cap: Optional[int] = Field(default=None, description="System cap applied (e.g. 30 if any biocatalyst is denatured)")
+    override_reason: Optional[str] = Field(default=None, description="Reason for system cap or override")
+    calculation_steps: List[str] = Field(default_factory=list, description="Ordered step-by-step trace of how the index was derived")
+
 class ScientificAssessmentResult(BaseModel):
     experiment_id: str
     timestamp: str
@@ -76,6 +86,10 @@ class ScientificAssessmentResult(BaseModel):
     score_breakdown: List[ComponentScoreEntry] = Field(
         default_factory=list,
         description="Per-component heuristic scores contributing to the overall compatibility index."
+    )
+    score_details: Optional[ScoreCalculationDetails] = Field(
+        default=None,
+        description="Detailed calculation trace distinguishing raw component mean from system caps or overrides."
     )
     executive_summary: str
     component_assessments: List[ComponentAssessment]
