@@ -1,20 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import {
   ComponentItem,
+  ComponentCategory,
   EvidenceRecord,
   ExperimentConfig,
   ScientificAssessmentResult,
   AISettings,
+  AIInterpretationResponse,
+  AIChatMessage,
 } from './types';
 import { api } from './services/api';
-import { storage, SavedExperimentRecord, DEFAULT_DEMO_EXPERIMENT } from './services/storage';
-import { Header } from './components/layout/Header';
+import {
+  storage,
+  SavedExperimentRecord,
+  DEFAULT_DEMO_EXPERIMENT,
+  computeConfigFingerprint,
+  generateExperimentId,
+  ASSESSED_FP_KEY,
+} from './services/storage';
 import { Sidebar, SectionType } from './components/layout/Sidebar';
 import { DashboardPage } from './pages/DashboardPage';
 import { LabBenchPage } from './pages/LabBenchPage';
 import { EnvironmentPage } from './pages/EnvironmentPage';
 import { ResultsPage } from './pages/ResultsPage';
-import { AIAssistantPage } from './pages/AIAssistantPage';
+import { AIAssistantPage, PendingAIAction } from './pages/AIAssistantPage';
 import { EvidenceLibraryPage } from './pages/EvidenceLibraryPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { RefreshCw, AlertCircle } from 'lucide-react';
@@ -28,11 +37,33 @@ export const App: React.FC = () => {
     storage.getExperimentHistory()
   );
   const [currentAssessment, setCurrentAssessment] = useState<ScientificAssessmentResult | null>(null);
+  const [assessedConfigFingerprint, setAssessedConfigFingerprint] = useState<string | null>(() => {
+    return localStorage.getItem(ASSESSED_FP_KEY);
+  });
+  const [benchCategoryFilter, setBenchCategoryFilter] = useState<ComponentCategory | 'All'>('All');
+  const [activeEvidenceId, setActiveEvidenceId] = useState<string | null>(null);
+  const [assessmentError, setAssessmentError] = useState<string | null>(null);
   const [aiSettings, setAiSettings] = useState<AISettings | null>(null);
+
+  // Interpretation on-demand state and AI chat history caching
+  const [pendingAIAction, setPendingAIAction] = useState<PendingAIAction | null>(null);
+  const [interpretationsByExpId, setInterpretationsByExpId] = useState<Record<string, AIInterpretationResponse>>(() => {
+    return storage.getStoredInterpretations();
+  });
+  const [chatMessages, setChatMessages] = useState<AIChatMessage[]>(() => {
+    return storage.getStoredChatMessages() || [];
+  });
 
   const [isLoadingInitial, setIsLoadingInitial] = useState(true);
   const [isAssessing, setIsAssessing] = useState(false);
   const [systemError, setSystemError] = useState<string | null>(null);
+
+  // Stale assessment check: true if assessment exists and current configuration fingerprint differs from assessed configuration
+  const isAssessmentStale = Boolean(
+    currentAssessment &&
+    assessedConfigFingerprint &&
+    computeConfigFingerprint(currentConfig) !== assessedConfigFingerprint
+  );
 
   // Initial load from backend
   useEffect(() => {
@@ -51,6 +82,11 @@ export const App: React.FC = () => {
         const history = storage.getExperimentHistory();
         if (history.length > 0 && history[0].assessment) {
           setCurrentAssessment(history[0].assessment);
+          const fp = history[0].configFingerprint || computeConfigFingerprint(history[0].config);
+          if (!localStorage.getItem(ASSESSED_FP_KEY)) {
+            setAssessedConfigFingerprint(fp);
+            localStorage.setItem(ASSESSED_FP_KEY, fp);
+          }
         }
       } catch (err: any) {
         setSystemError(
@@ -65,8 +101,16 @@ export const App: React.FC = () => {
 
   // Save draft whenever config changes
   const handleUpdateConfig = (updated: ExperimentConfig) => {
-    setCurrentConfig(updated);
-    storage.saveDraftExperiment(updated);
+    let finalConfig = updated;
+    // If id is empty or legacy format, normalize it
+    if (!finalConfig.id || finalConfig.id.startsWith('exp_')) {
+      finalConfig = {
+        ...finalConfig,
+        id: generateExperimentId(finalConfig, storage.getExperimentHistory()),
+      };
+    }
+    setCurrentConfig(finalConfig);
+    storage.saveDraftExperiment(finalConfig);
   };
 
   // Run Scientific Assessment
@@ -78,14 +122,22 @@ export const App: React.FC = () => {
     }
 
     setIsAssessing(true);
+    setAssessmentError(null);
     try {
       const assessment = await api.runAssessment(currentConfig);
+      const fp = computeConfigFingerprint(currentConfig);
       setCurrentAssessment(assessment);
+      setAssessedConfigFingerprint(fp);
+      localStorage.setItem(ASSESSED_FP_KEY, fp);
       storage.saveCompletedExperiment(currentConfig, assessment);
       setRecentExperiments(storage.getExperimentHistory());
       setActiveSection('results');
     } catch (e: any) {
-      alert(`Scientific Assessment Error: ${e.message}`);
+      const errMsg = e?.message || 'Scientific Assessment execution failed.';
+      setAssessmentError(errMsg);
+      if (!currentAssessment) {
+        setActiveSection('results');
+      }
     } finally {
       setIsAssessing(false);
     }
@@ -95,14 +147,19 @@ export const App: React.FC = () => {
   const handleLoadDemo = async () => {
     handleUpdateConfig(DEFAULT_DEMO_EXPERIMENT);
     setIsAssessing(true);
+    setAssessmentError(null);
     try {
       const assessment = await api.runAssessment(DEFAULT_DEMO_EXPERIMENT);
+      const fp = computeConfigFingerprint(DEFAULT_DEMO_EXPERIMENT);
       setCurrentAssessment(assessment);
+      setAssessedConfigFingerprint(fp);
+      localStorage.setItem(ASSESSED_FP_KEY, fp);
       storage.saveCompletedExperiment(DEFAULT_DEMO_EXPERIMENT, assessment);
       setRecentExperiments(storage.getExperimentHistory());
       setActiveSection('results');
     } catch (e: any) {
       console.error(e);
+      setAssessmentError(e?.message || 'Failed to load demo assessment');
       setActiveSection('bench');
     } finally {
       setIsAssessing(false);
@@ -112,7 +169,7 @@ export const App: React.FC = () => {
   // Start new blank experiment
   const handleNewExperiment = () => {
     const blank: ExperimentConfig = {
-      id: `exp_${Date.now()}`,
+      id: generateExperimentId({}, storage.getExperimentHistory()),
       name: 'Custom Plastic Biocatalysis Experiment',
       selected_components: [],
       environment: {
@@ -127,18 +184,40 @@ export const App: React.FC = () => {
     };
     handleUpdateConfig(blank);
     setCurrentAssessment(null);
+    setAssessedConfigFingerprint(null);
+    localStorage.removeItem(ASSESSED_FP_KEY);
+    setAssessmentError(null);
     setActiveSection('bench');
   };
 
   // Select experiment from history
   const handleSelectHistoryExperiment = (record: SavedExperimentRecord) => {
     setCurrentConfig(record.config);
+    setAssessmentError(null);
     if (record.assessment) {
       setCurrentAssessment(record.assessment);
+      const fp = record.configFingerprint || computeConfigFingerprint(record.config);
+      setAssessedConfigFingerprint(fp);
+      localStorage.setItem(ASSESSED_FP_KEY, fp);
       setActiveSection('results');
     } else {
+      setCurrentAssessment(null);
+      setAssessedConfigFingerprint(null);
+      localStorage.removeItem(ASSESSED_FP_KEY);
       setActiveSection('bench');
     }
+  };
+
+  // Delete experiment from history
+  const handleDeleteExperiment = (id: string) => {
+    storage.deleteExperimentFromHistory(id);
+    setRecentExperiments(storage.getExperimentHistory());
+  };
+
+  // Apply AI Proposed Experiment to workspace
+  const handleApplyProposal = (proposedConfig: ExperimentConfig) => {
+    handleUpdateConfig(proposedConfig);
+    setActiveSection('bench');
   };
 
   // Refresh AI settings from backend
@@ -162,19 +241,10 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F2F2F4] text-[#24242B] font-sans">
-      {/* Workstation Top Bar */}
-      <Header
-        experimentName={currentConfig.name}
-        isAssessing={isAssessing}
-        onRunAssessment={handleRunAssessment}
-        aiSettings={aiSettings}
-        onNavigateToSettings={() => setActiveSection('settings')}
-      />
-
+    <div className="h-screen h-[100dvh] flex flex-col bg-[#F2F2F4] text-[#24242B] font-sans overflow-hidden">
       {/* Backend Disconnected Alert if any */}
       {systemError && (
-        <div className="bg-[#FCEEEE] border-b border-[#F8C8C8] text-[#C44141] px-6 py-2.5 text-xs flex items-center justify-between">
+        <div className="bg-[#FCEEEE] border-b border-[#F8C8C8] text-[#C44141] px-6 py-2.5 text-xs flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-[#C44141] shrink-0" />
             <span>{systemError}</span>
@@ -189,7 +259,7 @@ export const App: React.FC = () => {
       )}
 
       {/* Main Workspace Body */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-h-0">
         {/* Navigation Sidebar */}
         <Sidebar
           activeSection={activeSection}
@@ -200,7 +270,11 @@ export const App: React.FC = () => {
         />
 
         {/* Content Pane */}
-        <main className="flex-1 overflow-y-auto bg-[#F2F2F4]">
+        <main className={`flex-1 bg-[#F2F2F4] min-h-0 min-w-0 ${
+          activeSection === 'dashboard' || activeSection === 'ai-assistant'
+            ? 'overflow-y-auto lg:overflow-hidden flex flex-col'
+            : 'overflow-y-auto'
+        }`}>
           {activeSection === 'dashboard' && (
             <DashboardPage
               currentConfig={currentConfig}
@@ -209,7 +283,11 @@ export const App: React.FC = () => {
               onLoadDemoWorkflow={handleLoadDemo}
               onNewExperiment={handleNewExperiment}
               onSelectExperiment={handleSelectHistoryExperiment}
-              onNavigate={s => setActiveSection(s as SectionType)}
+              onDeleteExperiment={handleDeleteExperiment}
+              onNavigate={(s, category) => {
+                if (category) setBenchCategoryFilter(category);
+                setActiveSection(s as SectionType);
+              }}
               onRunAssessment={handleRunAssessment}
             />
           )}
@@ -218,7 +296,10 @@ export const App: React.FC = () => {
             <LabBenchPage
               allComponents={components}
               currentConfig={currentConfig}
+              initialCategory={benchCategoryFilter}
+              isAssessing={isAssessing}
               onUpdateConfig={handleUpdateConfig}
+              onRunAssessment={handleRunAssessment}
               onNavigate={s => setActiveSection(s as SectionType)}
             />
           )}
@@ -238,14 +319,32 @@ export const App: React.FC = () => {
               assessment={currentAssessment}
               currentConfig={currentConfig}
               aiSettings={aiSettings}
-              onNavigateToAI={() => setActiveSection('ai-assistant')}
-              onNavigateToEvidence={() => setActiveSection('evidence')}
+              isStale={isAssessmentStale}
+              isAssessing={isAssessing}
+              assessmentError={assessmentError}
+              onNavigateToAI={(options) => {
+                if (options?.action) {
+                  setPendingAIAction({
+                    action: options.action,
+                    experimentId: options.experimentId || currentConfig.id || currentAssessment?.experiment_id,
+                  });
+                }
+                setActiveSection('ai-assistant');
+              }}
+              onNavigateToEvidence={evidenceId => {
+                if (evidenceId) setActiveEvidenceId(evidenceId);
+                setActiveSection('evidence');
+              }}
               onRunAssessment={handleRunAssessment}
             />
           )}
 
           {activeSection === 'evidence' && (
-            <EvidenceLibraryPage evidenceList={evidenceList} />
+            <EvidenceLibraryPage
+              evidenceList={evidenceList}
+              initialPaperId={activeEvidenceId}
+              currentConfig={currentConfig}
+            />
           )}
 
           {activeSection === 'ai-assistant' && (
@@ -255,6 +354,19 @@ export const App: React.FC = () => {
               aiSettings={aiSettings}
               onNavigateToSettings={() => setActiveSection('settings')}
               onNavigateToResults={() => setActiveSection('results')}
+              onApplyProposal={handleApplyProposal}
+              pendingAction={pendingAIAction}
+              onClearPendingAction={() => setPendingAIAction(null)}
+              interpretationsByExpId={interpretationsByExpId}
+              onSaveInterpretation={(expId, res) => {
+                setInterpretationsByExpId(prev => ({ ...prev, [expId]: res }));
+                storage.saveInterpretation(expId, res);
+              }}
+              chatMessages={chatMessages.length > 0 ? chatMessages : undefined}
+              onUpdateChatMessages={(msgs) => {
+                setChatMessages(msgs);
+                storage.saveChatMessages(msgs);
+              }}
             />
           )}
 

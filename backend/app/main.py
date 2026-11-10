@@ -27,6 +27,7 @@ def startup_event():
     init_scientific_data()
 
 @app.get("/health", tags=["System"])
+@app.get("/api/health", tags=["System"])
 def health_check():
     return {
         "status": "online",

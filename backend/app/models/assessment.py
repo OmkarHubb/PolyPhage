@@ -22,6 +22,10 @@ class ComponentAssessment(BaseModel):
     viability_status: ViabilityStatus
     temperature_assessment: str
     ph_assessment: str
+    concentration: Optional[str] = Field(
+        default=None,
+        description="Configured component concentration record (non-kinetic boundary condition)"
+    )
     notes: List[str] = Field(default_factory=list)
 
 class InteractionAssessment(BaseModel):
@@ -56,10 +60,14 @@ class ProductFinding(BaseModel):
     evidence_id: Optional[str] = None
 
 class EnvironmentalImplication(BaseModel):
-    category: str  # Carbon recovery, Acidification risk, Toxicity, Microplastic mitigation
+    category: str  # Carbon recovery & circularity, Acidification & pH management, Process energy & thermal requirements, Microplastic mitigation
     finding: str
     recommendation: str
-    severity_or_benefit: str  # High Benefit, Moderate Benefit, Manageable Risk, Critical Precaution
+    severity_or_benefit: str  # Potential Benefit, Conditional Benefit, Requires Validation, Potential Environmental Trade-off
+    evidence_type: str = Field(
+        default="rule_based_finding",
+        description="Distinction: 'literature_supported', 'theoretical_chemical_consideration', 'rule_based_finding', or 'experimentally_measured'"
+    )
 
 class ComponentScoreEntry(BaseModel):
     component_id: str
@@ -97,6 +105,26 @@ class ScientificAssessmentResult(BaseModel):
     active_pathways: List[PathwayFinding]
     potential_products: List[ProductFinding]
     environmental_implications: List[EnvironmentalImplication]
+    lca_disclaimer: str = Field(
+        default=(
+            "PolyPhage does not currently calculate net greenhouse gas savings or perform a complete Life Cycle Assessment. "
+            "Environmental benefits depend on process energy, enzyme production, pretreatment, product recovery, "
+            "purification and the displaced waste-management or virgin-material pathway."
+        ),
+        description="Life Cycle Assessment (LCA) system boundary and limitation disclaimer"
+    )
+    process_energy_considerations: List[str] = Field(
+        default_factory=list,
+        description="Identified process energy requirements (reactor heating, agitation, pretreatment, enzyme expression, monomer separation)"
+    )
+    circularity_potential: Optional[str] = Field(
+        default=None,
+        description="Circularity and monomer recovery analysis conditional on enzyme system and actual conversion"
+    )
+    acidification_considerations: Optional[str] = Field(
+        default=None,
+        description="Acidification dynamics and stoichiometric buffer requirements"
+    )
     evidence_references: List[Dict[str, Any]]
     assumptions_and_limitations: List[str]
     missing_evidence_and_uncertainties: List[str]

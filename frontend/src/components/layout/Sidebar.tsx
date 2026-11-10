@@ -63,7 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <aside className="w-64 border-r border-[#E7E7EB] bg-[#F7F7F8] flex flex-col justify-between p-4 select-none shrink-0 min-h-[calc(100vh-4rem)]">
+    <aside className="w-64 border-r border-[#E7E7EB] bg-[#F7F7F8] flex flex-col justify-between p-4 select-none shrink-0 h-full">
       {/* Brand Header & Main Nav */}
       <div className="space-y-6">
         {/* Brand */}
@@ -124,23 +124,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </nav>
       </div>
 
-      {/* Bottom Area: AI Status & Settings */}
-      <div className="space-y-2 pt-4 border-t border-[#E7E7EB]">
-        {/* Subtle AI Status Card */}
-        <div className="p-3 bg-white rounded-xl border border-[#E7E7EB] text-xs space-y-1">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-[#777780]">AI Copilot</span>
-            <span
-              className={`w-2 h-2 rounded-full ${
-                aiConfigured ? 'bg-[#72C7B0]' : 'bg-[#D0D0D6]'
-              }`}
-            />
-          </div>
-          <p className="text-[11px] text-[#24242B] font-medium">
-            {aiConfigured ? 'Connected (BYOK)' : 'Idle · Optional BYOK'}
-          </p>
-        </div>
-
+      {/* Bottom Area: Settings */}
+      <div className="pt-3 border-t border-[#E7E7EB]">
         {/* Settings Tab Button */}
         <button
           onClick={() => onSelectSection('settings')}

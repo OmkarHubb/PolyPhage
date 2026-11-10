@@ -173,7 +173,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   };
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-6">
+    <div className="p-5 md:p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
       {/* Title */}
       <div>
         <h1 className="text-xl font-bold text-[#24242B] flex items-center gap-2">
@@ -186,7 +186,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
       </div>
 
       {/* Security & Responsibility Disclosure */}
-      <div className="bg-white rounded-2xl p-6 border border-[#E7E7EB] shadow-xs space-y-3">
+      <div className="bg-white rounded-2xl p-5 lg:p-6 border border-[#E7E7EB] shadow-xs space-y-3">
         <div className="flex items-center gap-2 text-xs font-bold text-[#24242B]">
           <ShieldCheck className="w-4 h-4 text-[#72C7B0]" />
           <span>Security Architecture & Researcher Usage Terms</span>
@@ -196,8 +196,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#7461CE] block">
               Backend Credential Isolation
             </span>
-            <p className="text-[#777780] leading-relaxed">
-              Your API key is never written to browser LocalStorage or frontend bundles. It is managed strictly on the backend server in an isolated configuration file.
+            <p className="text-[#777780] leading-relaxed text-[11px]">
+              Your API key is never written to browser LocalStorage or frontend bundles. It is managed strictly on the backend server in an isolated configuration store.
             </p>
           </div>
 
@@ -205,7 +205,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#B47820] block">
               Autonomous Laboratory Guarantee
             </span>
-            <p className="text-[#777780] leading-relaxed">
+            <p className="text-[#777780] leading-relaxed text-[11px]">
               AI is completely optional. If unconfigured or disconnected, the deterministic biochemical assessment engine and all experimental tools remain 100% operational.
             </p>
           </div>
@@ -213,7 +213,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
       </div>
 
       {/* Active Status Banner */}
-      <div className="bg-white rounded-2xl p-5 border border-[#E7E7EB] shadow-xs flex items-center justify-between">
+      <div className="bg-white rounded-2xl p-4 lg:p-5 border border-[#E7E7EB] shadow-xs flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div
             className={`w-3 h-3 rounded-full ${
@@ -245,7 +245,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
       </div>
 
       {/* Configuration Form */}
-      <form onSubmit={handleSaveSettings} className="bg-white rounded-2xl p-6 border border-[#E7E7EB] shadow-xs space-y-5">
+      <form onSubmit={handleSaveSettings} className="bg-white rounded-2xl p-5 lg:p-6 border border-[#E7E7EB] shadow-xs space-y-5">
         <h2 className="text-xs font-bold uppercase tracking-wider text-[#24242B] border-b border-[#E7E7EB] pb-3">
           Provider & Model Parameters
         </h2>

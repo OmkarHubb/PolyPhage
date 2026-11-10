@@ -6,9 +6,10 @@ import {
   AISettings,
   AIInterpretationResponse,
   AIChatMessage,
+  AIChatResponse,
 } from '../types';
 
-const API_BASE = '/api';
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '');
 
 export const api = {
   // Components
@@ -117,7 +118,7 @@ export const api = {
     messages: AIChatMessage[],
     experiment?: ExperimentConfig,
     assessment?: ScientificAssessmentResult
-  ): Promise<{ reply: string; provider: string; model: string }> {
+  ): Promise<AIChatResponse> {
     const res = await fetch(`${API_BASE}/ai/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

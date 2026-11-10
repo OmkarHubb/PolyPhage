@@ -1,0 +1,11 @@
+{
+  "name": "polyphage-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PolyPhage AI - Virtual Biotechnology Laboratory for Plastic Biodegradation Research",
+  "scripts": {
+    "build": "npm --prefix frontend install && npm --prefix frontend run build",
+    "dev": "npm --prefix frontend run dev"
+  }
+}
+

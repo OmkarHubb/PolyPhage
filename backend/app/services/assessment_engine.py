@@ -28,7 +28,7 @@ class ScientificAssessmentEngine:
 
     def assess_experiment(self, config: ExperimentConfig) -> ScientificAssessmentResult:
         timestamp = datetime.utcnow().isoformat() + "Z"
-        experiment_id = config.id or f"exp_{int(datetime.utcnow().timestamp())}"
+        experiment_id = self._resolve_or_generate_experiment_id(config)
 
         # 1. Resolve and validate components
         selected_comps = config.selected_components
@@ -67,6 +67,7 @@ class ScientificAssessmentEngine:
                     viability_status=status,
                     temperature_assessment=temp_note,
                     ph_assessment=ph_note,
+                    concentration=sc.concentration,
                     notes=general_notes,
                 )
             )
@@ -93,8 +94,8 @@ class ScientificAssessmentEngine:
         collected_evidence_ids.update(pathway_evidence_ids)
 
         # 5. Formulate environmental and climate implications
-        environmental_implications = self._evaluate_environmental_impact(
-            selected_comps, pathways, env
+        environmental_implications, circularity_potential, acidification_considerations, process_energy_considerations = (
+            self._evaluate_environmental_impact(selected_comps, pathways, env)
         )
 
         # 6. Overall system score and status
@@ -125,8 +126,21 @@ class ScientificAssessmentEngine:
                 f"Step 2 (Arithmetic Mean): Raw unweighted component mean = sum({viability_scores}) / {len(viability_scores)} = {raw_mean:.1f} (integer: {overall_score})."
             )
 
-            # Step 3: Check for terminal biocatalytic failures (thermal denaturation / lethal stress)
+            # Step 3: Check for terminal biocatalytic failures and catalytic incompatibility
             denatured_components = [ca.name for ca in component_assessments if ca.viability_status == ViabilityStatus.DENATURED_OR_LETHAL]
+
+            # Substrate-catalyst compatibility verification
+            catalyst_cids = {sc.component_id for sc in selected_comps if sc.role.value == "catalyst"}
+            substrate_cids = {sc.component_id for sc in selected_comps if sc.role.value == "substrate"}
+            has_catalyst = len(catalyst_cids) > 0
+            has_substrate = len(substrate_cids) > 0
+            has_active_or_viable_pathway = any(p.status in ["active", "rate_limited"] for p in pathways)
+
+            is_catalytic_incompatibility = (
+                ("comp_pla" in substrate_cids and any(cid in ["comp_ispetase", "comp_fast_petase", "comp_lcc_iccg"] for cid in catalyst_cids))
+                or (has_catalyst and has_substrate and not has_active_or_viable_pathway)
+            )
+
             if denatured_components:
                 overall_status = "inactivated"
                 if overall_score > 30:
@@ -140,6 +154,21 @@ class ScientificAssessmentEngine:
                 else:
                     calculation_steps.append(
                         f"Step 3 (Terminal Status): {', '.join(denatured_components)} denatured; raw mean ({overall_score}) is already at or below the 30 ceiling."
+                    )
+            elif is_catalytic_incompatibility:
+                overall_status = "incompatible"
+                if overall_score > 25:
+                    applied_cap = 25
+                    overall_score = 25
+                    override_reason = (
+                        "Substrate-catalyst incompatibility override: The selected enzyme lacks an empirical catalytic "
+                        "cleavage pathway for the chosen polymer substrate. The Compatibility Index is capped at 25 "
+                        "to reflect the absence of depolymerization activity."
+                    )
+                    calculation_steps.append(f"Step 3 (Incompatibility Override Applied): {override_reason}")
+                else:
+                    calculation_steps.append(
+                        f"Step 3 (Incompatible Status): No validated enzymatic cleavage pathway established; index is {overall_score}."
                     )
             elif any(ca.viability_status == ViabilityStatus.SUBOPTIMAL for ca in component_assessments):
                 overall_status = "suboptimal"
@@ -192,6 +221,7 @@ class ScientificAssessmentEngine:
             "Assessment is based on published enzymatic biochemical profiles and known thermodynamic tolerance thresholds.",
             "Substrate crystallinity strongly dictates real-world hydrolytic rates: amorphous regions degrade markedly faster than crystalline bottle-grade lamellae.",
             "Enzyme accessibility assumes adequate agitation and liquid-solid interfacial surface contact.",
+            "Concentration is recorded for experimental reproducibility. This version does not use concentration to calculate enzymatic reaction rates or degradation yield.",
             "No molecular simulation or atomistic conformational dynamics are claimed; rules are deterministic literature-derived constraints."
         ]
 
@@ -221,6 +251,9 @@ class ScientificAssessmentEngine:
             active_pathways=pathways,
             potential_products=products,
             environmental_implications=environmental_implications,
+            circularity_potential=circularity_potential,
+            acidification_considerations=acidification_considerations,
+            process_energy_considerations=process_energy_considerations,
             evidence_references=evidence_records,
             assumptions_and_limitations=assumptions,
             missing_evidence_and_uncertainties=uncertainties,
@@ -428,6 +461,27 @@ class ScientificAssessmentEngine:
                     description="Hydrolysis of PET ester bonds releases carboxylic acid end groups (terephthalic acid pKa ~3.5 / 4.5). Without sufficient buffer or active base titration, medium pH will drop rapidly, inactivating the enzyme.",
                     participants=["Released Carboxylic Acids", "Catalytic Hydrolase"],
                     evidence_ids=["ref_tournier_2020", "ref_kawai_2019"],
+                    confidence=EvidenceLevel.LITERATURE_SUPPORTED,
+                )
+            )
+
+        # Incompatibility: PLA + PET-specific enzymes (IsPETase / FAST-PETase / LCC)
+        has_pla = any("pla" in cid.lower() for cid in cids) or "comp_pla" in cids
+        has_pet_enzyme = any(cid in ["comp_ispetase", "comp_fast_petase", "comp_lcc_iccg"] or "petase" in cid.lower() or "lcc" in cid.lower() for cid in cids)
+        if has_pla and has_pet_enzyme:
+            ev_ids.add("ref_kawai_2019")
+            interactions.append(
+                InteractionAssessment(
+                    interaction_type="incompatible_pairing",
+                    title="Enzyme-Substrate Catalytic Mismatch",
+                    description=(
+                        "Ideonella sakaiensis PETase and engineered PET hydrolases exhibit narrow substrate specificity "
+                        "for aromatic polyesters (PET and PEF) and lack documented catalytic depolymerization activity on "
+                        "aliphatic polyesters such as poly(lactic acid) (PLA). In published benchmarks (Kawai et al. 2019), "
+                        "PLA depolymerization requires specialized proteases (e.g., Proteinase K) or microbial lipases under composting conditions."
+                    ),
+                    participants=["Poly(lactic acid) (PLA)", "Polyester Hydrolase (PETase/Cutinase)"],
+                    evidence_ids=["ref_kawai_2019"],
                     confidence=EvidenceLevel.LITERATURE_SUPPORTED,
                 )
             )
@@ -649,43 +703,186 @@ class ScientificAssessmentEngine:
 
     def _evaluate_environmental_impact(
         self, selected_comps, pathways, env
-    ) -> List[EnvironmentalImplication]:
+    ) -> Tuple[List[EnvironmentalImplication], str, str, List[str]]:
         implications: List[EnvironmentalImplication] = []
         cids = {sc.component_id for sc in selected_comps}
 
-        # Climate & Circularity
-        if "comp_pet" in cids and any(p.status == "active" for p in pathways):
+        has_pet = "comp_pet" in cids
+        has_mhetase = "comp_mhetase" in cids
+        has_lcc = "comp_lcc_iccg" in cids
+        has_petase = "comp_ispetase" in cids or "comp_fast_petase" in cids
+        active_cleavage = any(p.status == "active" for p in pathways)
+
+        # A. Circularity potential
+        if has_pet and active_cleavage:
+            if has_petase and has_mhetase:
+                circularity_potential = (
+                    "Prospective dual-enzyme circularity potential: The concerted sequential cascade of PETase and MHETase enables progressive "
+                    "conversion of PET chains through soluble mono-(2-hydroxyethyl) terephthalate (MHET) into monomeric terephthalic acid (TPA) and ethylene glycol (EG). "
+                    "Potential circular repolymerization without virgin petrochemical cracking is theoretically supported by literature, "
+                    "conditional on quantitative downstream separation and crystallization efficiency."
+                )
+            elif has_lcc:
+                circularity_potential = (
+                    "Direct thermophilic monomer circularity potential: Engineered cutinase (LCC-ICCG) demonstrates high in vitro catalytic turnover "
+                    "yielding direct stoichiometric TPA and EG cleavage products at elevated temperature (~72°C). "
+                    "Circularity is conditional on substrate post-consumer crystallinity, thermal reactor energy balances, and post-reaction ultrafiltration recovery."
+                )
+            else:
+                circularity_potential = (
+                    "Intermediate-limited circularity potential: Wild-type IsPETase in isolation cleaves PET primarily into "
+                    "soluble mono-(2-hydroxyethyl) terephthalate (MHET) with limited direct terephthalic acid (TPA). "
+                    "Complete monomer recovery is not established in this single-enzyme configuration, and pure TPA recovery "
+                    "or closed-loop repolymerization cannot be claimed. Downstream circularity requires integrating secondary "
+                    "MHETase hydrolysis or chemical post-hydrolysis to resolve intermediate MHET accumulation and product inhibition."
+                )
+        elif "comp_pla" in cids and active_cleavage:
+            circularity_potential = (
+                "Aliphatic polyester circularity: Depolymerization of poly(lactic acid) yields lactic acid oligomers and monomers. "
+                "Circularity depends on active enzymatic or industrial composting conversion and downstream enantiomeric L-lactic acid recovery."
+            )
+        else:
+            circularity_potential = (
+                "Circularity potential is currently constrained or unverified: No viable enzymatic depolymerization pathway is active under the configured conditions."
+            )
+
+        # B. Acidification considerations
+        acidification_considerations = (
+            "Stoichiometric chemical basis: Ester bond hydrolysis liberates 1–2 molar equivalents of free carboxylic acid end groups "
+            "(terephthalic acid pKa1 ~3.5, pKa2 ~4.5) per cleaved repeat unit (1 equivalent for intermediate MHET; 2 equivalents per unit fully cleaved to TPA). "
+            "This stated range reflects theoretical chemical stoichiometry rather than experimentally measured titration data. "
+            "Without adequate buffer capacity or automated caustic dosing (e.g., 1M NaOH titration), medium pH will decline progressively, "
+            "causing acid-induced biocatalyst inhibition. Exact caustic consumption cannot be stated without empirical mass-balance titration."
+        )
+
+        # C. Process energy considerations
+        process_energy_considerations = [
+            f"Bioreactor Thermal Input: Sustaining {env.temperature_celsius:.1f}°C requires continuous thermal energy inputs ("
+            f"{'high thermal duty for thermophilic regime' if env.temperature_celsius >= 60 else 'moderate duty near ambient'}).",
+            f"Vessel Agitation Power: Mechanical agitation at {env.agitation_rpm or 150} RPM incurs continuous electrical consumption to maintain solid-liquid interfacial mass transfer.",
+            "Substrate Pretreatment: Mechanical micronization, shredding, or thermal amorphization of post-consumer PET represents significant embodied process energy.",
+            "Biocatalyst Expression: Heterologous protein expression, cell lysis, and enzyme formulation contribute upstream cradle-to-gate energy burdens.",
+            "Downstream Separation: Acidification, filtration, and crystallization of purified TPA monomers require thermal and electrical energy inputs."
+        ]
+
+        # Implication 1: Climate & Circular Economy
+        if has_pet and active_cleavage:
+            if has_petase and not has_mhetase:
+                implications.append(
+                    EnvironmentalImplication(
+                        category="Carbon Emission Abatement & Circular Economy",
+                        finding=(
+                            "Potential biological route for PET valorization. In this single-enzyme configuration (IsPETase without MHETase), "
+                            "hydrolysis yields predominantly mono-(2-hydroxyethyl) terephthalate (MHET) with limited direct TPA; "
+                            "complete monomer recovery is not established."
+                        ),
+                        recommendation=(
+                            "Downstream circular recycling requires secondary enzymatic conversion (e.g., MHETase integration) or chemical "
+                            "polishing to recover pure terephthalic acid (TPA). Biological depolymerization cannot be claimed to demonstrably divert "
+                            "waste from municipal landfill or incineration without validated pilot-scale operational metrics."
+                        ),
+                        severity_or_benefit="Conditional Benefit",
+                        evidence_type="literature_supported",
+                    )
+                )
+            elif has_petase and has_mhetase:
+                implications.append(
+                    EnvironmentalImplication(
+                        category="Carbon Emission Abatement & Circular Economy",
+                        finding=(
+                            "Dual-enzyme cascade (PETase + MHETase) offers a literature-supported route toward monomeric TPA and ethylene glycol."
+                        ),
+                        recommendation=(
+                            "May provide a prospective biological alternative to mechanical downcycling or disposal. Quantified net carbon abatement "
+                            "cannot be asserted from computational assessment alone and requires comprehensive cradle-to-gate Life Cycle Assessment (LCA)."
+                        ),
+                        severity_or_benefit="Potential Benefit",
+                        evidence_type="literature_supported",
+                    )
+                )
+            elif has_lcc:
+                implications.append(
+                    EnvironmentalImplication(
+                        category="Carbon Emission Abatement & Circular Economy",
+                        finding=(
+                            "Thermophilic cutinase (LCC-ICCG) demonstrates high in vitro depolymerization yielding direct TPA and ethylene glycol near PET Tg."
+                        ),
+                        recommendation=(
+                            "Potential monomer recovery pathway. Net environmental benefit is conditional on thermal bioreactor energy balances "
+                            "and displaced virgin petrochemical production, which require empirical validation."
+                        ),
+                        severity_or_benefit="Conditional Benefit",
+                        evidence_type="literature_supported",
+                    )
+                )
+            else:
+                implications.append(
+                    EnvironmentalImplication(
+                        category="Carbon Emission Abatement & Circular Economy",
+                        finding="Enzymatic PET depolymerization observed under active cleavage pathway.",
+                        recommendation="Monomer recovery and circularity remain conditional on downstream separation efficiency and net process energy accounting.",
+                        severity_or_benefit="Conditional Benefit",
+                        evidence_type="literature_supported",
+                    )
+                )
+        else:
             implications.append(
                 EnvironmentalImplication(
                     category="Carbon Emission Abatement & Circular Economy",
-                    finding="Biological depolymerization diverts post-consumer PET from municipal incineration and landfill accumulation.",
-                    recommendation="Conversion to pure TPA monomers enables closed-loop recycling without petrochemical cracking. The magnitude of lifecycle CO2-equivalent savings depends on process energy inputs and is not calculable from biochemical parameters alone.",
-                    severity_or_benefit="High Benefit",
+                    finding="No active depolymerization pathway is established under the configured conditions.",
+                    recommendation="Environmental circularity benefits cannot be realized without resolving catalytic incompatibility or enzyme inactivation.",
+                    severity_or_benefit="Requires Validation",
+                    evidence_type="rule_based_finding",
                 )
             )
 
-        # Microplastic mitigation
-        if "comp_pet" in cids:
-            implications.append(
-                EnvironmentalImplication(
-                    category="Microplastic Fragmentation Mitigation",
-                    finding="Enzymatic hydrolysis cleaves ester linkages into soluble small molecules rather than mechanically abrading into microplastic / nanoplastic particles.",
-                    recommendation="Ensure complete conversion or enzymatic digestion of secondary particulate residue to prevent fine particulate release into aquatic effluents.",
-                    severity_or_benefit="Moderate Benefit",
-                )
-            )
-
-        # Acidification management
+        # Implication 2: Acidification & pH Management
         implications.append(
             EnvironmentalImplication(
                 category="Reactor Effluent Neutralization & Acidification",
-                finding="Depolymerization generates 1-2 molar equivalents of free carboxylic acid groups (pKa1 3.5, pKa2 4.5) per cleaved repeat unit.",
-                recommendation="Install automated base dosing (e.g. 1M NaOH) to prevent sudden drop to pH <5.5, which would halt biocatalysis and pose localized effluent acidity.",
-                severity_or_benefit="Critical Precaution",
+                finding=(
+                    "Theoretical stoichiometric consideration: Depolymerization releases 1–2 molar equivalents of free carboxylic acid groups "
+                    "(pKa1 ~3.5, pKa2 ~4.5) per cleaved repeat unit based on chemical stoichiometry, not physical measurement."
+                ),
+                recommendation=(
+                    "Install automated caustic dosing (e.g., 1M NaOH titration) or robust buffering to prevent drop to pH <5.5, "
+                    "which would halt biocatalysis and produce acidic effluent requiring neutralization prior to discharge."
+                ),
+                severity_or_benefit="Potential Environmental Trade-off",
+                evidence_type="theoretical_chemical_consideration",
             )
         )
 
-        return implications
+        # Implication 3: Process Energy & Operating Regime
+        implications.append(
+            EnvironmentalImplication(
+                category="Process Energy & Thermal Operating Regime",
+                finding=f"Operating at {env.temperature_celsius:.1f}°C and {env.agitation_rpm or 150} RPM requires continuous utility electrical and thermal inputs based on reactor operating conditions.",
+                recommendation="Bioreactor heating and agitation energy represent real operational burdens that offset gross carbon benefits; thermal heat exchange and process integration must be evaluated before claiming net sustainability advantages.",
+                severity_or_benefit="Potential Environmental Trade-off",
+                evidence_type="rule_based_finding",
+            )
+        )
+
+        # Implication 4: Microplastic Fragmentation Avoidance
+        if has_pet:
+            implications.append(
+                EnvironmentalImplication(
+                    category="Microplastic Fragmentation Mitigation",
+                    finding=(
+                        "Theoretical environmental possibility: Enzymatic cleavage targets ester bonds at a molecular level, "
+                        "offering a potential biochemical alternative to purely mechanical comminution that generates persistent microplastic particles."
+                    ),
+                    recommendation=(
+                        "Mitigation of microplastic release is conditional on achieving high conversion; unreacted partially degraded fragments "
+                        "must be filtered and contained to prevent environmental discharge. Requires empirical verification."
+                    ),
+                    severity_or_benefit="Potential Benefit",
+                    evidence_type="literature_supported",
+                )
+            )
+
+        return implications, circularity_potential, acidification_considerations, process_energy_considerations
 
     def _generate_executive_summary(
         self, config, comp_assessments, pathways, products, overall_status, overall_score
@@ -762,6 +959,67 @@ class ScientificAssessmentEngine:
             })
 
         return benchmarks
+
+    def _determine_substrate_prefix(self, config: ExperimentConfig) -> str:
+        """Determines the correct polymer prefix strictly from the substrate component."""
+        import re
+        substrate_comp = None
+        for sc in config.selected_components:
+            r = getattr(sc, "role", "")
+            r_val = r.value if hasattr(r, "value") else str(r)
+            if r_val.lower() == "substrate":
+                substrate_comp = sc
+                break
+
+        if substrate_comp:
+            cid = substrate_comp.component_id.lower()
+            if cid == "comp_pet" or (cid.startswith("comp_pet") and "ispetase" not in cid and "petase" not in cid):
+                return "PET"
+            elif "pla" in cid and "petase" not in cid:
+                return "PLA"
+            elif "pef" in cid and "petase" not in cid:
+                return "PEF"
+            elif "pbat" in cid:
+                return "PBAT"
+            elif "pcl" in cid:
+                return "PCL"
+            elif any(k in cid for k in ["ldpe", "hdpe", "_pe"]):
+                return "PE"
+            elif "pur" in cid or "polyurethane" in cid:
+                return "PUR"
+            elif "ps" in cid and "ispetase" not in cid:
+                return "PS"
+            elif "pp" in cid:
+                return "PP"
+
+        if config.name:
+            n = config.name.upper()
+            for cand in ["PET", "PLA", "PEF", "PBAT", "PCL", "PUR", "PS", "PP", "PE"]:
+                if re.search(r"\b" + cand + r"\b", n):
+                    return cand
+
+        return "EXP"
+
+    def _resolve_or_generate_experiment_id(self, config: ExperimentConfig) -> str:
+        """
+        Maintains an alphanumeric, hyphenated experiment identifier (e.g. PET-20261107-001).
+        Preserves existing non-legacy identifiers across re-assessments and edits, provided
+        the polymer prefix matches the actual substrate. If the substrate polymer changed,
+        updates the prefix to prevent prefix-substrate mismatches.
+        """
+        substrate_prefix = self._determine_substrate_prefix(config)
+        if config.id and not config.id.startswith("exp_"):
+            parts = config.id.split("-", 1)
+            current_prefix = parts[0].upper()
+            if substrate_prefix != "EXP" and current_prefix != substrate_prefix:
+                suffix = parts[1] if len(parts) > 1 else parts[0]
+                return f"{substrate_prefix}-{suffix}"
+            return config.id
+
+        prefix = substrate_prefix
+        date_str = datetime.utcnow().strftime("%Y%m%d")
+        seq = (int(datetime.utcnow().timestamp()) % 900) + 100
+        return f"{prefix}-{date_str}-{seq:03d}"
 
 scientific_engine = ScientificAssessmentEngine()
 

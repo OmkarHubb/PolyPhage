@@ -40,8 +40,17 @@ export interface SelectedComponent {
   component_id: string;
   role: ComponentRole;
   concentration?: string;
+  concentration_value?: number;
+  concentration_unit?: string;
   notes?: string;
 }
+
+export const VALID_CONCENTRATION_UNITS: Record<ComponentCategory, string[]> = {
+  Enzymes: ['nM', 'µM', 'mg/L', 'mg/g substrate'],
+  Plastics: ['mg/mL', 'g/L', 'wt%'],
+  'Chemicals and Cofactors': ['mM', 'M', 'wt%'],
+  Microorganisms: ['OD600', 'CFU/mL', 'cells/mL'],
+};
 
 export type OxygenAvailability = 'Aerobic' | 'Microaerophilic' | 'Anaerobic';
 
@@ -75,6 +84,7 @@ export interface ComponentAssessment {
   viability_status: ViabilityStatus;
   temperature_assessment: string;
   ph_assessment: string;
+  concentration?: string;
   notes: string[];
 }
 
@@ -122,6 +132,7 @@ export interface EnvironmentalImplication {
   finding: string;
   recommendation: string;
   severity_or_benefit: string;
+  evidence_type?: string;
 }
 
 export interface EvidenceRecord {
@@ -178,6 +189,10 @@ export interface ScientificAssessmentResult {
   active_pathways: PathwayFinding[];
   potential_products: ProductFinding[];
   environmental_implications: EnvironmentalImplication[];
+  lca_disclaimer?: string;
+  process_energy_considerations?: string[];
+  circularity_potential?: string;
+  acidification_considerations?: string;
   evidence_references: EvidenceRecord[];
   assumptions_and_limitations: string[];
   missing_evidence_and_uncertainties: string[];
@@ -194,6 +209,14 @@ export interface AISettings {
   status_message?: string;
 }
 
+export interface ProposedExperimentProposal {
+  config: ExperimentConfig;
+  scientific_rationale: string;
+  expected_outcomes: string[];
+  assumptions_and_boundaries: string[];
+  supporting_evidence_ids: string[];
+}
+
 export interface AIInterpretationResponse {
   success: boolean;
   executive_overview: string;
@@ -201,12 +224,30 @@ export interface AIInterpretationResponse {
   environmental_and_climate_perspective: string;
   uncertainties_and_gap_analysis: string;
   recommended_follow_up_experiments: string[];
+  proposed_experiment?: ProposedExperimentProposal;
   provider: string;
   model: string;
+}
+
+export interface ToolExecutionRecord {
+  tool: string;
+  arguments: Record<string, any>;
+  summary: string;
+  result?: Record<string, any>;
 }
 
 export interface AIChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
+  executed_tools?: ToolExecutionRecord[];
+  proposed_experiment?: ProposedExperimentProposal;
+}
+
+export interface AIChatResponse {
+  reply: string;
+  executed_tools?: ToolExecutionRecord[];
+  proposed_experiment?: ProposedExperimentProposal;
+  provider: string;
+  model: string;
 }
 
