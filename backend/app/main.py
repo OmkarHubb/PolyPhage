@@ -26,6 +26,8 @@ app.add_middleware(
 def startup_event():
     init_scientific_data()
 
+@app.get("/", tags=["System"])
+@app.get("/api", tags=["System"])
 @app.get("/health", tags=["System"])
 @app.get("/api/health", tags=["System"])
 def health_check():
